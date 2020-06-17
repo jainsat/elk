@@ -1,12 +1,14 @@
+# Copyright (C) 2020 VMware, Inc.  All rights reserved.
+
 import os
 import sys
 import logging
 from utils import Utils
 from ifconfig_parser import IfConfigParser
 from netstat_parser import NetStatParser
-from constants import SUP_BUN
+from bootstrap_config_parser import BootStrapConfigParser
 
-parse_pipeline = [IfConfigParser(), NetStatParser()]
+parse_pipeline = [IfConfigParser(), BootStrapConfigParser(), NetStatParser() ]
 
 class CcpParser:
     def __init__(self, support_bundle_path, dest_dir):

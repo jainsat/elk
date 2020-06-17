@@ -3,9 +3,10 @@
 import os
 import logging
 from constants import NETSTAT_PATH, CCP_LISTENING
+from log_parser import LogParser
 
 
-class NetStatParser:
+class NetStatParser(LogParser):
 
     def parse(self, manager_root_dir, res):
         netstat_file_path = os.path.join(manager_root_dir, NETSTAT_PATH)

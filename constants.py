@@ -7,3 +7,5 @@ NETSTAT_PATH = "system/netstat_-nape"
 # Keys
 CCP_LISTENING = "ccp_listening"
 IP_ADDR = "ip_addr"
+BOOTSTRAP_CONFIG_PATH = "bootstrap-config"
+UUID = "uuid"

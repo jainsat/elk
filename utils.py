@@ -1,3 +1,5 @@
+# Copyright (C) 2020 VMware, Inc.  All rights reserved.
+
 import os
 import tarfile
 import logging

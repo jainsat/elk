@@ -1,10 +1,13 @@
+# Copyright (C) 2020 VMware, Inc.  All rights reserved.
+
 import os
 import re
 import logging
 from constants import IFCONFIG_PATH, IP_ADDR
+from log_parser import LogParser
 
 
-class IfConfigParser:
+class IfConfigParser(LogParser):
 
     def parse(self, manager_root_dir, res):
         ifconfig_file_path = os.path.join(manager_root_dir, IFCONFIG_PATH)
