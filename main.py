@@ -5,6 +5,7 @@ import sys
 import logging
 from optparse import OptionParser
 from ccp_parser import CcpParser
+from tn_log_parser import TnParser
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -31,8 +32,14 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG)
 
     logging.debug(options)
+
+    print("**************** Summary ********************")
+
     if options.ccp_log_path:
-        CcpParser(options.ccp_log_path, options.dest_dir).parse()
+        CcpParser(options.ccp_log_path, options.dest_dir).process()
+    if options.tn_log_path:
+        TnParser(options.tn_log_path, options.dest_dir).process()
+
 
 
 

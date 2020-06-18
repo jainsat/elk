@@ -6,17 +6,23 @@ import logging
 
 class Utils:
 
+
+    @staticmethod
+    def extract(filename, dest_dir):
+        if Utils.is_tar_gzipped(filename):
+            return Utils.extract_tgz_file(filename, dest_dir)
+
     @staticmethod
     def extract_tgz_file(filename, dest_dir):
         assert Utils.is_tar_gzipped(filename), \
             'Invalid file extension: Expected .tgz or .tar.gz, found {0}'.format(filename)
+        logging.debug("Extracting {0}".format(filename))
         tar = tarfile.open(filename, 'r:gz')
         if dest_dir is None:
             dest_dir = os.getcwd()
         tar.extractall(path=dest_dir)
         top_dir = os.path.commonprefix(tar.getnames())
         tar.close()
-        logging.debug("Done extracting {0}".format(filename))
         return top_dir
 
     @staticmethod

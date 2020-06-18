@@ -14,8 +14,7 @@ class CcpParser:
     def __init__(self, support_bundle_path, dest_dir):
         self.dest_dir = dest_dir
         self.manager_dirs = []
-        if Utils.is_tar_gzipped(support_bundle_path):
-            Utils.extract_tgz_file(support_bundle_path, dest_dir)
+        Utils.extract(support_bundle_path, dest_dir)
 
         # There should be three tgz files in the bundle.
         # and they should have format like nsx_manager_*.tgz.
@@ -28,11 +27,11 @@ class CcpParser:
 
         for f in nsx_mgr_files:
             file_full_path = os.path.join(dest_dir, f)
-            top_dir = Utils.extract_tgz_file(file_full_path, dest_dir)
+            top_dir = Utils.extract(file_full_path, dest_dir)
             self.manager_dirs.append(os.path.join(dest_dir, top_dir))
 
 
-    def parse(self):
+    def process(self):
         res = {}
         summary = ""
         for i, root_dir in enumerate(self.manager_dirs):
@@ -43,7 +42,6 @@ class CcpParser:
                 parser.parse(root_dir, res)
                 summary = summary + parser.summarize(res)
 
-        print("**************** Summary ********************")
         print(summary)
 
 

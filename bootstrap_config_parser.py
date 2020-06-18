@@ -2,7 +2,7 @@
 
 import logging
 import os
-from constants import BOOTSTRAP_CONFIG_PATH, UUID
+from constants import BOOTSTRAP_CONFIG_PATH, UUID_CONTROLLER
 from log_parser import LogParser
 
 
@@ -15,13 +15,13 @@ class BootStrapConfigParser(LogParser):
             line = f.readline()
             while line:
                 if line.find("node_uuid") > 0:
-                    res[UUID] = line.split("\"")[3]
+                    res[UUID_CONTROLLER] = line.split("\"")[3]
                 line = f.readline()
 
     def summarize(self, res):
         summary = ""
-        if res.get(UUID):
-            summary = "UUID = {0}\n".format(res[UUID])
+        if res.get(UUID_CONTROLLER):
+            summary = "UUID = {0}\n".format(res[UUID_CONTROLLER])
         else:
             summary = "UUID not found!!!\n"
         return summary
