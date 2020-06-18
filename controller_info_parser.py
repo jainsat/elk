@@ -4,8 +4,8 @@ import os
 import logging
 import xml.etree.ElementTree as ET
 from log_parser import LogParser
-from constants import CONTROLLER_INFO_PATH, PRESENT, MAINTENANCE_MODE, UUID_TN, \
-    CONTROLLER1, CONTROLLER2, CONTROLLER3
+from constants import CONTROLLER_INFO_PATH, CONTROLLER_INFO_PRESENT, \
+    MAINTENANCE_MODE, UUID_TN, CONTROLLER1, CONTROLLER2, CONTROLLER3
 
 class Controller:
     def __init__(self, ip, version, uuid):
@@ -18,14 +18,14 @@ class ControllerInfoParser(LogParser):
     def __init__(self):
         self.__cinfo_file_path = None
 
-    def parse(self, manager_root_dir, res):
+    def parse(self, manager_root_dir, res, type=None):
         self.__cinfo_file_path = os.path.join(manager_root_dir, CONTROLLER_INFO_PATH)
 
         # Check if the file exists
         if not self.__is_file_present():
-            res[PRESENT] = False
+            res[CONTROLLER_INFO_PRESENT] = False
             return
-        res[PRESENT] = True
+        res[CONTROLLER_INFO_PRESENT] = True
         root = ET.parse(self.__cinfo_file_path).getroot()
         if root.find("maintenanceMode") is not None:
             res[MAINTENANCE_MODE] = root.find("maintenanceMode").text
@@ -45,7 +45,7 @@ class ControllerInfoParser(LogParser):
 
 
     def summarize(self, res):
-        if not res[PRESENT]:
+        if not res[CONTROLLER_INFO_PRESENT]:
             return "Could not find {0}\n".format(self.__cinfo_file_path)
         with open("templates/controller_info") as f:
             summary = f.read().format(self.__cinfo_file_path, res[UUID_TN],
@@ -55,9 +55,9 @@ class ControllerInfoParser(LogParser):
                            res[CONTROLLER3].ip, res[CONTROLLER3].version,
                            res[CONTROLLER3].uuid)
             if res.get(MAINTENANCE_MODE):
-                summary = summary + "MaintenanceMode = {0}\n".format(res[MAINTENANCE_MODE])
+                summary = summary + "MaintenanceMode = {0}\n\n".format(res[MAINTENANCE_MODE])
             else:
-                summary = summary + "MaintenanceMode = NOT FOUND.\n"
+                summary = summary + "MaintenanceMode = NOT FOUND.\n\n"
 
             return summary
 

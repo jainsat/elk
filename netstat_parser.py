@@ -8,7 +8,7 @@ from log_parser import LogParser
 
 class NetStatParser(LogParser):
 
-    def parse(self, manager_root_dir, res):
+    def parse(self, manager_root_dir, res, type=None):
         netstat_file_path = os.path.join(manager_root_dir, NETSTAT_PATH)
         logging.debug("Parsing  {0}".format(netstat_file_path))
         with open(netstat_file_path) as f:

@@ -3,10 +3,20 @@
 import os
 import logging
 from utils import Utils
-from constants import NODE_TYPE
+from constants import NODE_TYPE, ESX, EDGE, KVM_UBU
 from controller_info_parser import ControllerInfoParser
+from esx_version_parser import EsxVersionParser
+from dpkg_parser import DpkgParser
 
-parser_pipeline= [ControllerInfoParser()]
+parser_pipeline = [ControllerInfoParser()]
+esx_parser_pipeline = [EsxVersionParser()]
+edge_parser_pipeline = [DpkgParser()]
+kvm_parser_pipeline = [DpkgParser()]
+
+tn_mapping = {ESX: esx_parser_pipeline,
+              EDGE: edge_parser_pipeline,
+              KVM_UBU: kvm_parser_pipeline }
+
 
 class TnParser:
     def __init__(self, support_bundle_path, dest_dir):
@@ -14,11 +24,16 @@ class TnParser:
         # Extract the logs.
         # Some times, the root folder is zipped multiple times.
         self.top_dir = Utils.extract(support_bundle_path, dest_dir)
-        while os.path.isfile(os.path.join(dest_dir,self.top_dir)):
-            self.top_dir = Utils.extract(support_bundle_path, dest_dir)
+        if self.top_dir == "":
+            # KVM
+            dirs = os.listdir(dest_dir)
+            for file in dirs:
+                if file.startswith("nsx_ubuntu"):
+                    self.res[NODE_TYPE] = KVM_UBU
+                    self.top_dir = Utils.extract(os.path.join(dest_dir, file), dest_dir)
+
         self.top_dir_full_path = os.path.join(dest_dir, self.top_dir)
         logging.debug("root directory = {0}".format(self.top_dir_full_path))
-
 
     def process(self):
         self.res[NODE_TYPE] = self.get_node_type()
@@ -26,27 +41,20 @@ class TnParser:
             summary = f.read()
         summary = summary.format(self.res[NODE_TYPE], self.top_dir_full_path)
 
-        for parser in parser_pipeline:
-            parser.parse(self.top_dir_full_path, self.res)
+        final_parser_pipeline = parser_pipeline + tn_mapping[self.res[NODE_TYPE]]
+        for parser in final_parser_pipeline:
+            parser.parse(self.top_dir_full_path, self.res, self.res[NODE_TYPE])
             summary = summary + parser.summarize(self.res)
 
         print(summary)
 
-
-
-
-
     def get_node_type(self):
         if self.is_esx_node():
-            return "ESX"
+            return ESX
         elif self.is_edge_node():
-            return "EDGE"
-        elif self.is_ubuntu_kvm_node():
-            return "Ubuntu KVM"
-        elif self.is_rhel_kvm_node():
-            return "RHEL KVM"
+            return EDGE
         else:
-            return "Unknown"
+            return KVM_UBU
 
     def is_edge_node(self):
         return self.top_dir.startswith("nsx_edge_")

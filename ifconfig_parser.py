@@ -9,7 +9,7 @@ from log_parser import LogParser
 
 class IfConfigParser(LogParser):
 
-    def parse(self, manager_root_dir, res):
+    def parse(self, manager_root_dir, res, type=None):
         ifconfig_file_path = os.path.join(manager_root_dir, IFCONFIG_PATH)
         logging.debug("Parsing  {0}".format(ifconfig_file_path))
         with open(ifconfig_file_path) as f:

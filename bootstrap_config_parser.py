@@ -8,7 +8,7 @@ from log_parser import LogParser
 
 class BootStrapConfigParser(LogParser):
 
-    def parse(self, manager_root_dir, res):
+    def parse(self, manager_root_dir, res, type=None):
         bootstrap_file_path = os.path.join(manager_root_dir, BOOTSTRAP_CONFIG_PATH)
         logging.debug("Parsing  {0}".format(bootstrap_file_path))
         with open(bootstrap_file_path) as f:
