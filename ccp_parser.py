@@ -7,6 +7,7 @@ from utils import Utils
 from ifconfig_parser import IfConfigParser
 from netstat_parser import NetStatParser
 from bootstrap_config_parser import BootStrapConfigParser
+from constants import MGR
 
 parse_pipeline = [IfConfigParser(), BootStrapConfigParser(), NetStatParser() ]
 
@@ -39,8 +40,9 @@ class CcpParser:
             summary = summary + "CCP #{0}\n".format(i)
             summary = summary + "Support Bundle = {0}\n".format(root_dir)
             for parser in parse_pipeline:
-                parser.parse(root_dir, res)
-                summary = summary + parser.summarize(res)
+                parser.init(root_dir, res, MGR)
+                parser.parse()
+                summary = summary + parser.summarize()
 
         print(summary)
 

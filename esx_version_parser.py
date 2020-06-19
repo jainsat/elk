@@ -8,30 +8,34 @@ from constants import ESX_VERSION_FILE_PATH, PROXY_VERSION, ESX_VER_FILE_PRESENT
 
 class EsxVersionParser(LogParser):
     def __init__(self):
-        self.__version_file_path = None
+        self.file = None
+        self.res = None
 
-    def parse(self, manager_root_dir, res, type=None):
-        self.__version_file_path = os.path.join(manager_root_dir, ESX_VERSION_FILE_PATH)
-        if not os.path.exists(self.__version_file_path):
-            res[ESX_VER_FILE_PRESENT] = False
+    def init(self, root_dir, res, type=None):
+        self.res = res
+        self.file = os.path.join(root_dir, ESX_VERSION_FILE_PATH)
+
+    def parse(self):
+        if not os.path.exists(self.file):
+            self.res[ESX_VER_FILE_PRESENT] = False
             return
-        res[ESX_VER_FILE_PRESENT] = True
-        logging.debug("Parsing  {0}".format(self.__version_file_path))
-        with open(self.__version_file_path) as f:
+        self.res[ESX_VER_FILE_PRESENT] = True
+        logging.debug("Parsing  {0}".format(self.file))
+        with open(self.file) as f:
             line = f.readline()
             while line:
                 if line.find("nsx-proxy") >= 0:
                     arr = line.split()
-                    res[PROXY_VERSION] = arr[1]
+                    self.res[PROXY_VERSION] = arr[1]
                     break
                 line = f.readline()
 
-    def summarize(self, res):
-        if not res[ESX_VER_FILE_PRESENT]:
-            return "{0} does not exist, so can't find NSX proxy version\n" \
-                .format(self.__version_file_path)
+    def summarize(self):
+        if not self.res[ESX_VER_FILE_PRESENT]:
+            return "Could not {0}, so can't find NSX proxy version\n" \
+                .format(self.file)
 
         with open("templates/proxy_version") as f:
-            summary = f.read().format(self.__version_file_path, res[PROXY_VERSION])
+            summary = f.read().format(self.file, self.res[PROXY_VERSION])
 
         return summary

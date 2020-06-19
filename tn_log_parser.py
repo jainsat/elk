@@ -7,8 +7,9 @@ from constants import NODE_TYPE, ESX, EDGE, KVM_UBU
 from controller_info_parser import ControllerInfoParser
 from esx_version_parser import EsxVersionParser
 from dpkg_parser import DpkgParser
+from netstat_parser import NetStatParser
 
-parser_pipeline = [ControllerInfoParser()]
+parser_pipeline = [ControllerInfoParser(), NetStatParser()]
 esx_parser_pipeline = [EsxVersionParser()]
 edge_parser_pipeline = [DpkgParser()]
 kvm_parser_pipeline = [DpkgParser()]
@@ -43,8 +44,10 @@ class TnParser:
 
         final_parser_pipeline = parser_pipeline + tn_mapping[self.res[NODE_TYPE]]
         for parser in final_parser_pipeline:
-            parser.parse(self.top_dir_full_path, self.res, self.res[NODE_TYPE])
-            summary = summary + parser.summarize(self.res)
+            parser.init(self.top_dir_full_path, self.res, self.res[NODE_TYPE])
+            parser.parse()
+            logging.debug("done")
+            summary = summary + parser.summarize()
 
         print(summary)
 

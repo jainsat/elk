@@ -5,8 +5,11 @@ class LogParser:
     '''
     All the log parser classes will implement this interface.
     '''
-    def parse(self, manager_root_dir, res, type):
+    def init(self, manager_root_dir, res, type):
         pass
 
-    def summarize(self, res):
+    def parse(self):
+        pass
+
+    def summarize(self):
         pass

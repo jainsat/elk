@@ -2,6 +2,7 @@
 
 import os
 import logging
+import sys
 import xml.etree.ElementTree as ET
 from log_parser import LogParser
 from constants import CONTROLLER_INFO_PATH, CONTROLLER_INFO_PRESENT, \
@@ -13,26 +14,31 @@ class Controller:
         self.version = version
         self.uuid = uuid
 
+
 class ControllerInfoParser(LogParser):
 
     def __init__(self):
-        self.__cinfo_file_path = None
+        self.file = None
+        self.type = None
+        self.res = None
 
-    def parse(self, manager_root_dir, res, type=None):
-        self.__cinfo_file_path = os.path.join(manager_root_dir, CONTROLLER_INFO_PATH)
+    def init(self, root_dir, res, type=None):
+        self.res = res
+        self.type = type
+        self.file = os.path.join(root_dir, CONTROLLER_INFO_PATH)
 
+    def parse(self):
         # Check if the file exists
         if not self.__is_file_present():
-            res[CONTROLLER_INFO_PRESENT] = False
+            self.res[CONTROLLER_INFO_PRESENT] = False
             return
-        res[CONTROLLER_INFO_PRESENT] = True
-        root = ET.parse(self.__cinfo_file_path).getroot()
+        self.res[CONTROLLER_INFO_PRESENT] = True
+        root = ET.parse(self.file).getroot()
         if root.find("maintenanceMode") is not None:
-            res[MAINTENANCE_MODE] = root.find("maintenanceMode").text
-
+            self.res[MAINTENANCE_MODE] = root.find("maintenanceMode").text
 
         # UUID of transport node.
-        res[UUID_TN] = root.find("transportNode").find("UUID").text
+        self.res[UUID_TN] = root.find("transportNode").find("UUID").text
 
         # Fetch controller info.
         controllers = root.find("connectionList").findall("connection")
@@ -40,22 +46,22 @@ class ControllerInfoParser(LogParser):
             ip = controller.find("server").text
             uuid = controller.find("uuid").text
             version = controller.find("version").text
-            res["controller{0}".format(i)] = Controller(ip, version, uuid)
-        logging.debug(res)
+            self.res["controller{0}".format(i)] = Controller(ip, version, uuid)
+        logging.debug(self.res)
 
 
-    def summarize(self, res):
-        if not res[CONTROLLER_INFO_PRESENT]:
-            return "Could not find {0}\n".format(self.__cinfo_file_path)
+    def summarize(self):
+        if not self.res[CONTROLLER_INFO_PRESENT]:
+            return "Could not find {0}\n".format(self.file)
         with open("templates/controller_info") as f:
-            summary = f.read().format(self.__cinfo_file_path, res[UUID_TN],
-                           res[CONTROLLER1].ip,res[CONTROLLER1].version,
-                           res[CONTROLLER1].uuid, res[CONTROLLER2].ip,
-                           res[CONTROLLER2].version, res[CONTROLLER2].uuid,
-                           res[CONTROLLER3].ip, res[CONTROLLER3].version,
-                           res[CONTROLLER3].uuid)
-            if res.get(MAINTENANCE_MODE):
-                summary = summary + "MaintenanceMode = {0}\n\n".format(res[MAINTENANCE_MODE])
+            summary = f.read().format(self.file, self.res[UUID_TN],
+                           self.res[CONTROLLER1].ip,self.res[CONTROLLER1].version,
+                           self.res[CONTROLLER1].uuid, self.res[CONTROLLER2].ip,
+                           self.res[CONTROLLER2].version, self.res[CONTROLLER2].uuid,
+                           self.res[CONTROLLER3].ip, self.res[CONTROLLER3].version,
+                           self.res[CONTROLLER3].uuid)
+            if self.res.get(MAINTENANCE_MODE):
+                summary = summary + "MaintenanceMode = {0}\n\n".format(self.res[MAINTENANCE_MODE])
             else:
                 summary = summary + "MaintenanceMode = NOT FOUND.\n\n"
 
@@ -65,13 +71,13 @@ class ControllerInfoParser(LogParser):
     def __is_file_present(self):
 
         # if file is not present
-        if not os.path.exists(self.__cinfo_file_path):
+        if not os.path.exists(self.file):
             return False
 
         # If file is empty or whole file has been commented out i.e. not a valid
         # file.
         try:
-            tree = ET.parse(self.__cinfo_file_path)
+            tree = ET.parse(self.file)
             return True
         except ET.ParseError:
             return False
