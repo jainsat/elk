@@ -39,7 +39,7 @@ class IfConfigParser(LogParser):
         if self.res[IFCONFIG_PRESENT]:
             summary = "Found {0}\n".format(self.file)
         else:
-            return"Could not find {0}.\n".format(self.file)
+            return "Could not find {0}.\n".format(self.file)
         if self.res.get(IP_ADDR):
             summary = summary + "IP Address = {0}\n\n".format(self.res[IP_ADDR])
         else:

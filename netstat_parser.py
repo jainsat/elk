@@ -5,13 +5,14 @@ import sys
 import logging
 from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, KVM_UBU, \
     KVM_UBU_NETSTAT_PATH, CONNECTED_MGR, CONNECTED_MP, ESX_NETSTAT_PATH, \
-    EDGE_NETSTAT_PATH, NETSTAT_PRESENT
+    EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR
 from log_parser import LogParser
 
 file_map = {ESX: ESX_NETSTAT_PATH,
             EDGE: EDGE_NETSTAT_PATH,
             KVM_UBU: KVM_UBU_NETSTAT_PATH,
-            MGR: MGR_NETSTAT_PATH}
+            MGR: MGR_NETSTAT_PATH,
+            GLOB_MGR: MGR_NETSTAT_PATH}
 
 class NetStatParser(LogParser):
 
@@ -35,7 +36,7 @@ class NetStatParser(LogParser):
         else:
             self.res[NETSTAT_PRESENT] = False
             return
-        if self.type == MGR:
+        if self.type == MGR or self.type == GLOB_MGR:
             self.__parse_mgr_netstat()
         else:
             self.__parse_tn_netstat()
@@ -45,7 +46,7 @@ class NetStatParser(LogParser):
             summary = "Found {0}\n".format(self.file)
         else:
             return "Could not find {0}.\n".format(self.file)
-        if self.type == MGR:
+        if self.type == MGR or self.type == GLOB_MGR:
             return summary + self.__summarize_mgr()
         else:
             return summary + self.__summarize_tn()

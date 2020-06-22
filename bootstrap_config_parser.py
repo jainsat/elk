@@ -36,7 +36,7 @@ class BootStrapConfigParser(LogParser):
             summary = "Found {0}\n".format(self.file)
         else:
             summary = "Could not find {0}.\n".format(self.file)
-            return
+            return summary
 
         if self.res.get(UUID_CONTROLLER):
             summary = summary + "UUID = {0}\n\n".format(self.res[UUID_CONTROLLER])

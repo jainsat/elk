@@ -5,15 +5,11 @@ Options:
   -v, --verbose
   -b BUG_ID, --bug_id=BUG_ID
                         Bug id on Bugzilla where the summary should be posted.
-  -t TN_LOG_PATH, --tn_logs=TN_LOG_PATH
-                        Path to transport node's support bundle.
-  -c CCP_LOG_PATH, --ccp_logs=CCP_LOG_PATH
-                        Path to CCP support bundle.
-  -f FEDERATION_LOG_PATH, --federation_logs=FEDERATION_LOG_PATH
-                        Path to  CCP support bundle in Federation use case.
   -d DEST_DIR, --dest_dir=DEST_DIR
                         Directory where support bundle should be extracted.
+  -l LOG, --log=LOG     Path to log
+
 
 
 Sample command:
-$ python main.py --ccp_logs <log_path> --dest_dir <dest_dir> --verbose
+$ python main.py --log <log_path> --dest_dir <dest_dir> --verbose

@@ -11,6 +11,8 @@ CONTROLLER_INFO_PATH = "etc/vmware/nsx/controller-info.xml"
 DPKG_EDGE_PATH = "system/dpkg_-l"
 DPKG_KVM_UBU_PATH = "commands/dpkg_-l.txt"
 ESX_VERSION_FILE_PATH = "commands/localcli_software-vib-list.txt"
+NSX_ISSUE_PATH = "etc/nsx_issue"
+CLUSTER_JSON_PATH = "clustering.json"
 
 
 # Keys
@@ -26,7 +28,7 @@ NETSTAT_PRESENT = "netstat_present"
 IFCONFIG_PRESENT = "ifconfig_present"
 DPKG_PRESENT = "dpkg_present"
 ESX_VER_FILE_PRESENT = "esx_version_file_present"
-
+CLUSTER_JSON_PRESENT = "clustering_json_present"
 
 MAINTENANCE_MODE = "maintenance_mode"
 CONTROLLER1 = "controller1"
@@ -41,3 +43,6 @@ ESX = "esx"
 EDGE = "edge"
 KVM_UBU = "kvm_ubuntu"
 MGR = "nsx_mgr"
+GLOB_MGR = "global-manager"
+UNKNOWN = "unknown"
+IS_GLOBAL = "is_global"
