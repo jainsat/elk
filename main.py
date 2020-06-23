@@ -21,19 +21,19 @@ def get_parser(type, root_dir):
         return UNKNOWN
 
 
-def handle_dir(dir, type=UNKNOWN):
+def handle_dir(dir, dest_dir, type=UNKNOWN):
     if type == UNKNOWN:
         type = Utils.get_log_type(dir)
     if type != UNKNOWN:
         get_parser(type, dir).process()
     else:
-        zipped_files = [f for f in os.listdir(options.dest_dir) if
+        zipped_files = [os.path.join(dir, f) for f in os.listdir(dir) if
               Utils.is_tar_gzipped(f)]
         if len(zipped_files) == 0:
             logging.debug("No zipped files found inside {0}\n".format(dir))
             return
         for zipped_file in zipped_files:
-            handle_zipped_file(zipped_file, dir, type)
+            handle_zipped_file(zipped_file, dest_dir, type)
 
 
 def handle_zipped_file(name, dest_dir, type=UNKNOWN):
@@ -43,17 +43,15 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
     top_dir = Utils.extract(name, dest_dir)
     if type == UNKNOWN:
         type = Utils.get_log_type(top_dir)
-    #print("top dir ={0}".format(top_dir))
     if top_dir != "":
         if type != UNKNOWN:
             get_parser(type, os.path.join(dest_dir, top_dir)).process()
         else:
             dest_dir += "/" + top_dir
-            handle_dir(dest_dir, type)
+            handle_dir(dest_dir, dest_dir, type)
     else:
         new = os.listdir(dest_dir)
         delta = [f for f in new if f not in old and Utils.is_tar_gzipped(f)]
-        #print(delta)
         for file in delta:
             handle_zipped_file(os.path.join(dest_dir, file), dest_dir, type)
 
@@ -84,7 +82,7 @@ if __name__ == "__main__":
         if os.path.isfile(options.log):
             handle_zipped_file(options.log, options.dest_dir)
         elif os.path.isdir(options.log):
-            handle_dir(options.log)
+            handle_dir(options.log, options.dest_dir)
 
 
 
