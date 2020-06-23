@@ -35,6 +35,7 @@ CONTROLLER1 = "controller0"
 CONTROLLER2 = "controller1"
 CONTROLLER3 = "controller2"
 PROXY_VERSION = "proxy_version"
+TN = "transport_node"
 
 CONNECTED_MGR = "connected_mgr"
 CONNECTED_MP = "connected_mp"

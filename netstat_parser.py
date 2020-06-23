@@ -5,7 +5,7 @@ import sys
 import logging
 from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, KVM_UBU, \
     KVM_UBU_NETSTAT_PATH, CONNECTED_MGR, CONNECTED_MP, ESX_NETSTAT_PATH, \
-    EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR, IP_ADDR
+    EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR, IP_ADDR, TN
 from log_parser import LogParser
 
 file_map = {ESX: ESX_NETSTAT_PATH,
@@ -53,9 +53,14 @@ class NetStatParser(LogParser):
 
     def __summarize_mgr(self):
         if self.res.get(CCP_LISTENING):
-            summary = "CCP is listening at port 1235.\n\n"
+            summary = "CCP is listening at port 1235.\n"
         else:
-            summary = "CCP is not listening at port 1235!!!\n\n"
+            summary = "CCP is not listening at port 1235!!!\n"
+        if not self.res.get(TN):
+            summary += "No transport nodes are connected to CCP.\n"
+        else:
+            summary += "Transport nodes connected to CCP: {0}\n".format(self.res[TN])
+        summary += "\n"
         return summary
 
     def __summarize_tn(self):
@@ -79,11 +84,15 @@ class NetStatParser(LogParser):
         with open(self.file) as f:
             line = f.readline()
             while line:
-                if line.find("0.0.0.0:1235") > 0:
+                if line.find(":1235") > 0:
                     arr = line.split()
-                    if arr[5] == "LISTEN":
+                    if arr[3].strip() == "0.0.0.0:1235" and arr[5] == "LISTEN":
                         self.res[CCP_LISTENING] = True
-                    break
+                    elif arr[5] == "ESTABLISHED":
+                        if not self.res.get(TN):
+                            self.res[TN] = []
+                        tn_ip = arr[4].split(":")[0]
+                        self.res[TN].append(tn_ip)
                 line = f.readline()
 
     def __parse_tn_netstat(self):
