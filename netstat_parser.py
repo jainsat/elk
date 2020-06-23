@@ -5,7 +5,7 @@ import sys
 import logging
 from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, KVM_UBU, \
     KVM_UBU_NETSTAT_PATH, CONNECTED_MGR, CONNECTED_MP, ESX_NETSTAT_PATH, \
-    EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR
+    EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR, IP_ADDR
 from log_parser import LogParser
 
 file_map = {ESX: ESX_NETSTAT_PATH,
@@ -59,15 +59,19 @@ class NetStatParser(LogParser):
         return summary
 
     def __summarize_tn(self):
+        if self.res[IP_ADDR]:
+            summary = "IP = {0}\n".format(self.res[IP_ADDR])
+
         if self.res.get(CONNECTED_MGR):
-            summary = "NSX Proxy is connected to CCP.\n"
+            summary += "NSX Proxy is connected to CCP.\n"
         else:
-            summary = "[WARNING] NSX Proxy is not connected to CCP.\n"
+            summary += "[WARNING] NSX Proxy is not connected to CCP.\n"
+
         if self.res.get(CONNECTED_MP) == 3:
-            summary += "NSX Proxy is connected to all three MPs.\n\n"
+            summary += "APH is connected to all three MPAs.\n\n"
 
         else:
-            summary += "[WARNING] NSX Proxy is not connected to all three MPs.\n\n"
+            summary += "[WARNING] APH is not connected some of the three MPAs.\n\n"
         return summary
 
     def __parse_mgr_netstat(self):
@@ -91,11 +95,13 @@ class NetStatParser(LogParser):
                     arr = line.split()
                     if arr[5] == "ESTABLISHED":
                         self.res[CONNECTED_MGR] = True
+                        self.res[IP_ADDR] = arr[3].split(":")[0].strip()
 
                 if line.find(":1234") > 0:
                     arr = line.split()
                     if arr[5] == "ESTABLISHED":
                         self.res[CONNECTED_MP] = self.res.get(CONNECTED_MP, 0) + 1
+                        self.res[IP_ADDR] = arr[3].split(":")[0].strip()
 
                 line = f.readline()
 

@@ -49,7 +49,8 @@ class CcpParser:
             summary = summary + parser.summarize()
 
         print(summary)
-
+        print("#" * 75)
+        print("\n")
 
 
 

@@ -47,7 +47,7 @@ class ControllerInfoParser(LogParser):
             uuid = controller.find("uuid").text
             version = controller.find("version").text
             self.res["controller{0}".format(i)] = Controller(ip, version, uuid)
-        logging.debug(self.res)
+            logging.debug(self.res)
 
 
     def summarize(self):

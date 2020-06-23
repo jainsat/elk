@@ -1,8 +1,6 @@
 # Copyright (C) 2020 VMware, Inc.  All rights reserved.
 
-import os
 import logging
-from utils import Utils
 from constants import NODE_TYPE, ESX, EDGE, KVM_UBU
 from controller_info_parser import ControllerInfoParser
 from esx_version_parser import EsxVersionParser
@@ -40,4 +38,7 @@ class TnParser:
             summary = summary + parser.summarize()
 
         print(summary)
+        print("#" * 75)
+        print("\n")
+
 
