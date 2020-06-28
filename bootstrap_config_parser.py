@@ -33,14 +33,11 @@ class BootStrapConfigParser(LogParser):
 
     def summarize(self):
         if self.res[BOOTSTRAP_CONFIG_PRESENT]:
-            summary = "Found {0}\n".format(self.file)
+            logging.debug("Found {0}".format(self.file))
         else:
-            summary = "Could not find {0}.\n".format(self.file)
-            return summary
+            logging.debug("Could not find {0}.".format(self.file))
 
-        if self.res.get(UUID_CONTROLLER):
-            summary = summary + "UUID = {0}\n\n".format(self.res[UUID_CONTROLLER])
-        else:
-            summary = summary + "UUID not found!!!\n\n"
+        with open('templates/bootstrap_config_summary') as f:
+            summary = f.read().format(self.res.get(UUID_CONTROLLER))
         return summary
 

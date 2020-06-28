@@ -49,24 +49,18 @@ class ControllerInfoParser(LogParser):
             self.res["controller{0}".format(i)] = Controller(ip, version, uuid)
             logging.debug(self.res)
 
-
     def summarize(self):
         if not self.res[CONTROLLER_INFO_PRESENT]:
             return "Could not find {0}\n".format(self.file)
         with open("templates/controller_info") as f:
-            summary = f.read().format(self.file, self.res[UUID_TN],
+            summary = f.read().format(self.res.get(UUID_TN),
                            self.res[CONTROLLER1].ip,self.res[CONTROLLER1].version,
                            self.res[CONTROLLER1].uuid, self.res[CONTROLLER2].ip,
                            self.res[CONTROLLER2].version, self.res[CONTROLLER2].uuid,
                            self.res[CONTROLLER3].ip, self.res[CONTROLLER3].version,
-                           self.res[CONTROLLER3].uuid)
-            if self.res.get(MAINTENANCE_MODE):
-                summary = summary + "MaintenanceMode = {0}\n\n".format(self.res[MAINTENANCE_MODE])
-            else:
-                summary = summary + "MaintenanceMode = NOT FOUND.\n\n"
-
+                           self.res[CONTROLLER3].uuid,
+                           self.res.get(MAINTENANCE_MODE))
             return summary
-
 
     def __is_file_present(self):
 
@@ -81,5 +75,3 @@ class ControllerInfoParser(LogParser):
             return True
         except ET.ParseError:
             return False
-
-

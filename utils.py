@@ -3,7 +3,7 @@
 import os
 import tarfile
 import logging
-from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
+from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR, NSX_ISSUE_PATH
 
 class Utils:
 
@@ -36,6 +36,27 @@ class Utils:
     @staticmethod
     def is_tar_gzipped(filename):
         return filename.endswith(".tgz") or filename.endswith(".tar.gz")
+
+
+    @staticmethod
+    def check_nsx_issue(dir_name):
+        if os.path.isdir(dir_name):
+            nsx_issue_file = os.path.join(dir_name, NSX_ISSUE_PATH)
+            if os.path.isfile(nsx_issue_file):
+                with open(nsx_issue_file) as f:
+                    line = f.readline()
+                    while line:
+                        if line.find("node-type") == 0:
+                            val = line.split(":")[1].strip()
+                            if val == GLOB_MGR:
+                                return GLOB_MGR
+                            elif val.startswith("nsx-manager"):
+                                return MGR
+                            elif val.find("edge") >= 0:
+                                return EDGE
+                            elif val.find("esx") >= 0:
+                                return ESX
+                        line = f.readline()
 
 
     @staticmethod

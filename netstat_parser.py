@@ -4,7 +4,7 @@ import os
 import sys
 import logging
 from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, KVM_UBU, \
-    KVM_UBU_NETSTAT_PATH, CONNECTED_MGR, CONNECTED_MP, ESX_NETSTAT_PATH, \
+    KVM_UBU_NETSTAT_PATH, PROXY_CCP_CONN, APH_MPA_CONN, ESX_NETSTAT_PATH, \
     EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR, IP_ADDR, TN
 from log_parser import LogParser
 
@@ -43,51 +43,40 @@ class NetStatParser(LogParser):
 
     def summarize(self):
         if self.res[NETSTAT_PRESENT]:
-            summary = "Found {0}\n".format(self.file)
+            logging.debug("Found {0}".format(self.file))
         else:
-            return "Could not find {0}.\n".format(self.file)
+            logging.debug("Could not find {0}.".format(self.file))
         if self.type == MGR or self.type == GLOB_MGR:
-            return summary + self.__summarize_mgr()
+            return self.__summarize_mgr()
         else:
-            return summary + self.__summarize_tn()
+            return self.__summarize_tn()
 
     def __summarize_mgr(self):
-        if self.res.get(CCP_LISTENING):
-            summary = "CCP is listening at port 1235.\n"
-        else:
-            summary = "CCP is not listening at port 1235!!!\n"
-        if not self.res.get(TN):
-            summary += "No transport nodes are connected to CCP.\n"
-        else:
-            summary += "Transport nodes connected to CCP: {0}\n".format(self.res[TN])
-        summary += "\n"
+        with open("templates/netstat_ccp_summary") as f:
+            summary = f.read().format(self.res.get(CCP_LISTENING),
+                                      self.res.get(TN))
+
         return summary
 
     def __summarize_tn(self):
-        if self.res[IP_ADDR]:
-            summary = "IP = {0}\n".format(self.res[IP_ADDR])
+        with open("templates/netstat_tn_summary") as f:
+            summary = f.read().format(self.res.get(IP_ADDR),
+                                      self.res.get(PROXY_CCP_CONN),
+                                      self.res.get(APH_MPA_CONN))
 
-        if self.res.get(CONNECTED_MGR):
-            summary += "NSX Proxy is connected to CCP.\n"
-        else:
-            summary += "[WARNING] NSX Proxy is not connected to CCP.\n"
-
-        if self.res.get(CONNECTED_MP) == 3:
-            summary += "APH is connected to all three MPAs.\n\n"
-
-        else:
-            summary += "[WARNING] APH is not connected some of the three MPAs.\n\n"
         return summary
+
 
     def __parse_mgr_netstat(self):
         logging.debug("Parsing  {0}".format(self.file))
+        self.res[CCP_LISTENING] = "is not"
         with open(self.file) as f:
             line = f.readline()
             while line:
                 if line.find(":1235") > 0:
                     arr = line.split()
                     if arr[3].strip() == "0.0.0.0:1235" and arr[5] == "LISTEN":
-                        self.res[CCP_LISTENING] = True
+                        self.res[CCP_LISTENING] = "is"
                     elif arr[5] == "ESTABLISHED":
                         if not self.res.get(TN):
                             self.res[TN] = []
@@ -97,20 +86,26 @@ class NetStatParser(LogParser):
 
     def __parse_tn_netstat(self):
         logging.debug("Parsing  {0}".format(self.file))
+        self.res[PROXY_CCP_CONN] = "is not"
         with open(self.file) as f:
             line = f.readline()
             while line:
                 if line.find(":1235") > 0:
                     arr = line.split()
                     if arr[5] == "ESTABLISHED":
-                        self.res[CONNECTED_MGR] = True
+                        self.res[PROXY_CCP_CONN] = "is"
                         self.res[IP_ADDR] = arr[3].split(":")[0].strip()
 
                 if line.find(":1234") > 0:
                     arr = line.split()
                     if arr[5] == "ESTABLISHED":
-                        self.res[CONNECTED_MP] = self.res.get(CONNECTED_MP, 0) + 1
+                        self.res[APH_MPA_CONN] = self.res.get(APH_MPA_CONN, 0) + 1
                         self.res[IP_ADDR] = arr[3].split(":")[0].strip()
 
                 line = f.readline()
+
+        if self.res[APH_MPA_CONN] == 3:
+            self.res[APH_MPA_CONN] = "is"
+        else:
+            self.res[APH_MPA_CONN] = "is not"
 

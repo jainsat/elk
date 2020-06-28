@@ -1,19 +1,19 @@
-Found {0}
-
-UUID = {1}
+UUID = {0}
 
 Controller 1:
-    IP = {2}
-    Version = {3}
-    UUID = {4}
+    IP = {1}
+    Version = {2}
+    UUID = {3}
 
 Controller 2:
-    IP = {5}
-    Version = {6}
-    UUID = {7}
+    IP = {4}
+    Version = {5}
+    UUID = {6}
 
 Controller 3:
-    IP = {8}
-    Version = {9}
-    UUID = {10}
+    IP = {7}
+    Version = {8}
+    UUID = {9}
+
+Maintenance Mode = {10}
 

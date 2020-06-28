@@ -9,9 +9,12 @@ from tn_log_parser import TnParser
 from utils import Utils
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
 
-summary = ""
+common = {}
 
 def get_parser(type, root_dir):
+    nsx_override_type = Utils.check_nsx_issue(root_dir)
+    if nsx_override_type:
+        type = nsx_override_type
     if type == MGR or type == GLOB_MGR:
         return CcpParser(root_dir, type)
     elif type == ESX or type == EDGE or type == KVM_UBU:

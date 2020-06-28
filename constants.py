@@ -37,8 +37,8 @@ CONTROLLER3 = "controller2"
 PROXY_VERSION = "proxy_version"
 TN = "transport_node"
 
-CONNECTED_MGR = "connected_mgr"
-CONNECTED_MP = "connected_mp"
+PROXY_CCP_CONN = "proxy-ccp-conn"
+APH_MPA_CONN = "aph-mpa-conn"
 
 ESX = "esx"
 EDGE = "edge"

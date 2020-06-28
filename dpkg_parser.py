@@ -44,11 +44,11 @@ class DpkgParser(LogParser):
 
     def summarize(self):
         if not self.res[DPKG_PRESENT]:
-            return "Could not find {0}, so can't tell NSX Proxy Version\n" \
-            .format(self.file)
+            logging.debug("Could not find {0}, so can't tell NSX Proxy Version" \
+            .format(self.file))
 
         with open("templates/proxy_version") as f:
-            summary = f.read().format(self.file, self.res[PROXY_VERSION])
+            summary = f.read().format(self.res.get(PROXY_VERSION))
 
         return summary
 

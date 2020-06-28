@@ -40,11 +40,10 @@ class ClusteringJsonParser(LogParser):
 
     def summarize(self):
         if self.res[CLUSTER_JSON_PRESENT]:
-            summary = "Found {0}\n".format(self.file)
+            logging.debug("Found {0}".format(self.file))
         else:
-            return "Could not find {0}.\n".format(self.file)
-        if self.res.get(UUID_CONTROLLER):
-            summary = summary + "UUID = {0}\n\n".format(self.res[UUID_CONTROLLER])
-        else:
-            summary = summary + "UUID not found!!!\n\n"
+            logging.debug("Could not find {0}.".format(self.file))
+
+        with open('templates/clustering_json_summary') as f:
+            summary = f.read().format(self.res.get(UUID_CONTROLLER))
         return summary

@@ -32,10 +32,10 @@ class EsxVersionParser(LogParser):
 
     def summarize(self):
         if not self.res[ESX_VER_FILE_PRESENT]:
-            return "Could not {0}, so can't find NSX proxy version\n" \
-                .format(self.file)
+            logging.debug("Could not {0}, so can't find NSX proxy version" \
+                          .format(self.file))
 
         with open("templates/proxy_version") as f:
-            summary = f.read().format(self.file, self.res[PROXY_VERSION])
+            summary = f.read().format(self.res.get(PROXY_VERSION))
 
         return summary

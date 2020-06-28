@@ -14,24 +14,6 @@ class CcpParser:
     def __init__(self, root_dir, type=MGR):
         self.root_dir = root_dir
         self.type = type
-        if self.type == MGR and self.is_global_manager():
-            self.type = GLOB_MGR
-
-    def is_global_manager(self):
-        nsx_issue_file = os.path.join(self.root_dir, NSX_ISSUE_PATH)
-        if not os.path.exists(nsx_issue_file):
-            return False
-        with open(nsx_issue_file) as f:
-            line = f.readline()
-            while line:
-                if line.find("node-type") == 0:
-                    mgr_type = line.split(":")[1].strip()
-                    if mgr_type == GLOB_MGR:
-                        return True
-                    else:
-                        return False
-                line = f.readline()
-        return False
 
     def process(self):
         res = {}

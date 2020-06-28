@@ -37,11 +37,9 @@ class IfConfigParser(LogParser):
 
     def summarize(self):
         if self.res[IFCONFIG_PRESENT]:
-            summary = "Found {0}\n".format(self.file)
+            logging.debug("Found {0}".format(self.file))
         else:
-            return "Could not find {0}.\n".format(self.file)
-        if self.res.get(IP_ADDR):
-            summary = summary + "IP Address = {0}\n\n".format(self.res[IP_ADDR])
-        else:
-            summary = summary + "Could not find IP address.\n\n"
+            logging.debug("Could not find {0}.".format(self.file))
+        with open("templates/ifconfig_summary") as f:
+            summary = f.read().format(self.res.get(IP_ADDR))
         return summary
