@@ -17,10 +17,8 @@ class BootStrapConfigParser(LogParser):
         self.file = os.path.join(root_dir, BOOTSTRAP_CONFIG_PATH)
 
     def parse(self):
-        if os.path.exists(self.file):
-            self.res[BOOTSTRAP_CONFIG_PRESENT] = True
-        else:
-            self.res[BOOTSTRAP_CONFIG_PRESENT] = False
+        if not os.path.exists(self.file):
+            logging.debug("Could not find {0}.".format(self.file))
             return
 
         logging.debug("Parsing  {0}".format(self.file))
@@ -30,14 +28,3 @@ class BootStrapConfigParser(LogParser):
                 if line.find("node_uuid") > 0:
                     self.res[UUID_CONTROLLER] = line.split("\"")[3]
                 line = f.readline()
-
-    def summarize(self):
-        if self.res[BOOTSTRAP_CONFIG_PRESENT]:
-            logging.debug("Found {0}".format(self.file))
-        else:
-            logging.debug("Could not find {0}.".format(self.file))
-
-        with open('templates/bootstrap_config_summary') as f:
-            summary = f.read().format(self.res.get(UUID_CONTROLLER))
-        return summary
-

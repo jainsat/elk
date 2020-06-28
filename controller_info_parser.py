@@ -2,17 +2,17 @@
 
 import os
 import logging
-import sys
 import xml.etree.ElementTree as ET
 from log_parser import LogParser
-from constants import CONTROLLER_INFO_PATH, CONTROLLER_INFO_PRESENT, \
-    MAINTENANCE_MODE, UUID_TN, CONTROLLER1, CONTROLLER2, CONTROLLER3
+from constants import CONTROLLER_INFO_PATH, MAINTENANCE_MODE, UUID_TN, \
+    CONTROLLERS
 
 class Controller:
-    def __init__(self, ip, version, uuid):
+    def __init__(self, ip, version, uuid, certificate):
         self.ip = ip
         self.version = version
         self.uuid = uuid
+        self.certificate = certificate
 
 
 class ControllerInfoParser(LogParser):
@@ -30,9 +30,8 @@ class ControllerInfoParser(LogParser):
     def parse(self):
         # Check if the file exists
         if not self.__is_file_present():
-            self.res[CONTROLLER_INFO_PRESENT] = False
+            print("Could not find {0}\n".format(self.file))
             return
-        self.res[CONTROLLER_INFO_PRESENT] = True
         root = ET.parse(self.file).getroot()
         if root.find("maintenanceMode") is not None:
             self.res[MAINTENANCE_MODE] = root.find("maintenanceMode").text
@@ -42,25 +41,15 @@ class ControllerInfoParser(LogParser):
 
         # Fetch controller info.
         controllers = root.find("connectionList").findall("connection")
+        controller_list = []
         for i, controller in enumerate(controllers):
             ip = controller.find("server").text
             uuid = controller.find("uuid").text
             version = controller.find("version").text
-            self.res["controller{0}".format(i)] = Controller(ip, version, uuid)
+            certificate = controller.find("pemKey").text
+            controller_list.append(Controller(ip, version, uuid, certificate))
             logging.debug(self.res)
-
-    def summarize(self):
-        if not self.res[CONTROLLER_INFO_PRESENT]:
-            return "Could not find {0}\n".format(self.file)
-        with open("templates/controller_info") as f:
-            summary = f.read().format(self.res.get(UUID_TN),
-                           self.res[CONTROLLER1].ip,self.res[CONTROLLER1].version,
-                           self.res[CONTROLLER1].uuid, self.res[CONTROLLER2].ip,
-                           self.res[CONTROLLER2].version, self.res[CONTROLLER2].uuid,
-                           self.res[CONTROLLER3].ip, self.res[CONTROLLER3].version,
-                           self.res[CONTROLLER3].uuid,
-                           self.res.get(MAINTENANCE_MODE))
-            return summary
+        self.res[CONTROLLERS] = controller_list
 
     def __is_file_present(self):
 

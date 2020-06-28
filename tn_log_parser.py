@@ -1,7 +1,8 @@
 # Copyright (C) 2020 VMware, Inc.  All rights reserved.
 
 import logging
-from constants import NODE_TYPE, ESX, EDGE, KVM_UBU
+import sys
+from constants import ESX, EDGE, KVM_UBU, IP_ADDR, SUPPORT_BUNDLE
 from controller_info_parser import ControllerInfoParser
 from esx_version_parser import EsxVersionParser
 from dpkg_parser import DpkgParser
@@ -18,27 +19,26 @@ tn_mapping = {ESX: esx_parser_pipeline,
 
 
 class TnParser:
-    def __init__(self, root_dir, type):
-        self.res = {}
+    def __init__(self, root_dir, uuid_to_data, type):
         self.root_dir = root_dir
         self.type = type
+        self.uuid_to_data = uuid_to_data
         logging.debug("root directory = {0}".format(self.root_dir))
 
     def process(self):
-        with open("templates/basic") as f:
-            summary = f.read()
-
-        summary = summary.format(self.type, self.root_dir)
-
         final_parser_pipeline = parser_pipeline + tn_mapping[self.type]
+        res = {}
+        res[SUPPORT_BUNDLE] = self.root_dir
         for parser in final_parser_pipeline:
-            parser.init(self.root_dir, self.res, self.type)
+            parser.init(self.root_dir, res, self.type)
             parser.parse()
-            logging.debug("done")
-            summary = summary + parser.summarize()
 
-        print(summary)
-        print("#" * 75)
-        print("\n")
+        if res.get(IP_ADDR):
+            key = "{0}#{1}".format(self.type, res.get(IP_ADDR))
+            self.uuid_to_data[key] = res
+
+        else:
+            print("No IP address found for {0}", self.root_dir)
+            sys.exit(1)
 
 

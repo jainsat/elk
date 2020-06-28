@@ -4,8 +4,8 @@ import logging
 import os
 import sys
 from log_parser import LogParser
-from constants import DPKG_EDGE_PATH, DPKG_KVM_UBU_PATH, PROXY_VERSION, \
-    DPKG_PRESENT, EDGE, KVM_UBU
+from constants import DPKG_EDGE_PATH, DPKG_KVM_UBU_PATH, PROXY_VERSION, EDGE, \
+    KVM_UBU
 
 file_map = {EDGE: DPKG_EDGE_PATH,
             KVM_UBU: DPKG_KVM_UBU_PATH}
@@ -29,9 +29,9 @@ class DpkgParser(LogParser):
 
     def parse(self):
         if not os.path.exists(self.file):
-            self.res[DPKG_PRESENT] = False
+            logging.debug("Could not find {0}, so can't tell NSX Proxy Version" \
+            .format(self.file))
             return
-        self.res[DPKG_PRESENT] = True
         logging.debug("Parsing  {0}".format(self.file))
         with open(self.file) as f:
             line = f.readline()
@@ -41,14 +41,4 @@ class DpkgParser(LogParser):
                     self.res[PROXY_VERSION] = arr[2]
                     break
                 line = f.readline()
-
-    def summarize(self):
-        if not self.res[DPKG_PRESENT]:
-            logging.debug("Could not find {0}, so can't tell NSX Proxy Version" \
-            .format(self.file))
-
-        with open("templates/proxy_version") as f:
-            summary = f.read().format(self.res.get(PROXY_VERSION))
-
-        return summary
 

@@ -3,8 +3,7 @@
 import os
 import logging
 import json
-from constants import CLUSTER_JSON_PATH, IP_ADDR, CLUSTER_JSON_PRESENT, \
-    UUID_CONTROLLER, GLOB_MGR, MGR
+from constants import CLUSTER_JSON_PATH, IP_ADDR, UUID_CONTROLLER, MGR
 from log_parser import LogParser
 
 
@@ -21,9 +20,9 @@ class ClusteringJsonParser(LogParser):
 
     def parse(self):
         if not os.path.exists(self.file):
-            self.res[CLUSTER_JSON_PRESENT] = False
+            logging.debug("Could not find {0}.".format(self.file))
             return
-        self.res[CLUSTER_JSON_PRESENT] = True
+
         logging.debug("Parsing  {0}".format(self.file))
         if self.type == MGR:
             manager_key = "CONTROLLER"
@@ -38,12 +37,3 @@ class ClusteringJsonParser(LogParser):
                         self.res[UUID_CONTROLLER] = entity.get("entity_uuid")
                         return
 
-    def summarize(self):
-        if self.res[CLUSTER_JSON_PRESENT]:
-            logging.debug("Found {0}".format(self.file))
-        else:
-            logging.debug("Could not find {0}.".format(self.file))
-
-        with open('templates/clustering_json_summary') as f:
-            summary = f.read().format(self.res.get(UUID_CONTROLLER))
-        return summary

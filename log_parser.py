@@ -10,6 +10,3 @@ class LogParser:
 
     def parse(self):
         pass
-
-    def summarize(self):
-        pass

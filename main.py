@@ -8,17 +8,19 @@ from ccp_parser import CcpParser
 from tn_log_parser import TnParser
 from utils import Utils
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
+from tn_summarizer import TnSummarizer
+from mgr_summarizer import MgrSummarizer
 
-common = {}
+uuid_to_data = {}
 
 def get_parser(type, root_dir):
     nsx_override_type = Utils.check_nsx_issue(root_dir)
     if nsx_override_type:
         type = nsx_override_type
     if type == MGR or type == GLOB_MGR:
-        return CcpParser(root_dir, type)
+        return CcpParser(root_dir, uuid_to_data, type)
     elif type == ESX or type == EDGE or type == KVM_UBU:
-        return TnParser(root_dir, type)
+        return TnParser(root_dir, uuid_to_data, type)
     else:
         logging.debug("No parser of type {0} found".format(type))
         return UNKNOWN
@@ -87,8 +89,16 @@ if __name__ == "__main__":
         elif os.path.isdir(options.log):
             handle_dir(options.log, options.dest_dir)
 
+    for k, v in uuid_to_data.items():
+        arr = k.split("#")
+        node_type = arr[0]
+        if node_type == MGR or node_type == GLOB_MGR:
+            MgrSummarizer(uuid_to_data, k).summarize()
+        else:
+            TnSummarizer(uuid_to_data, k).summarize()
 
-
+        print("#" * 75)
+        print()
 
 
 

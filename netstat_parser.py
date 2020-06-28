@@ -5,7 +5,7 @@ import sys
 import logging
 from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, KVM_UBU, \
     KVM_UBU_NETSTAT_PATH, PROXY_CCP_CONN, APH_MPA_CONN, ESX_NETSTAT_PATH, \
-    EDGE_NETSTAT_PATH, NETSTAT_PRESENT, GLOB_MGR, IP_ADDR, TN
+    EDGE_NETSTAT_PATH, GLOB_MGR, IP_ADDR, TN
 from log_parser import LogParser
 
 file_map = {ESX: ESX_NETSTAT_PATH,
@@ -31,41 +31,13 @@ class NetStatParser(LogParser):
         self.file = os.path.join(root_dir, file)
 
     def parse(self):
-        if os.path.exists(self.file):
-            self.res[NETSTAT_PRESENT] = True
-        else:
-            self.res[NETSTAT_PRESENT] = False
+        if not os.path.exists(self.file):
+            logging.debug("Could not find {0}.".format(self.file))
             return
         if self.type == MGR or self.type == GLOB_MGR:
             self.__parse_mgr_netstat()
         else:
             self.__parse_tn_netstat()
-
-    def summarize(self):
-        if self.res[NETSTAT_PRESENT]:
-            logging.debug("Found {0}".format(self.file))
-        else:
-            logging.debug("Could not find {0}.".format(self.file))
-        if self.type == MGR or self.type == GLOB_MGR:
-            return self.__summarize_mgr()
-        else:
-            return self.__summarize_tn()
-
-    def __summarize_mgr(self):
-        with open("templates/netstat_ccp_summary") as f:
-            summary = f.read().format(self.res.get(CCP_LISTENING),
-                                      self.res.get(TN))
-
-        return summary
-
-    def __summarize_tn(self):
-        with open("templates/netstat_tn_summary") as f:
-            summary = f.read().format(self.res.get(IP_ADDR),
-                                      self.res.get(PROXY_CCP_CONN),
-                                      self.res.get(APH_MPA_CONN))
-
-        return summary
-
 
     def __parse_mgr_netstat(self):
         logging.debug("Parsing  {0}".format(self.file))
