@@ -13,10 +13,12 @@ from mgr_summarizer import MgrSummarizer
 
 uuid_to_data = {}
 
+def is_root(dir_name):
+    if os.path.exists(os.path.join(dir_name, "etc")):
+        return True
+    return False
+
 def get_parser(type, root_dir):
-    nsx_override_type = Utils.check_nsx_issue(root_dir)
-    if nsx_override_type:
-        type = nsx_override_type
     if type == MGR or type == GLOB_MGR:
         return CcpParser(root_dir, uuid_to_data, type)
     elif type == ESX or type == EDGE or type == KVM_UBU:
@@ -27,38 +29,41 @@ def get_parser(type, root_dir):
 
 
 def handle_dir(dir, dest_dir, type=UNKNOWN):
-    if type == UNKNOWN:
-        type = Utils.get_log_type(dir)
-    if type != UNKNOWN:
+    new_type = Utils.get_log_type(dir)
+    if new_type:
+        type = new_type
+    if type != UNKNOWN and is_root(dir):
         get_parser(type, dir).process()
     else:
         zipped_files = [os.path.join(dir, f) for f in os.listdir(dir) if
               Utils.is_tar_gzipped(f)]
-        if len(zipped_files) == 0:
-            logging.debug("No zipped files found inside {0}\n".format(dir))
-            return
-        for zipped_file in zipped_files:
-            handle_zipped_file(zipped_file, dest_dir, type)
+        if len(zipped_files) > 0:
+            for zipped_file in zipped_files:
+                handle_zipped_file(zipped_file, dest_dir, type)
+
+        dirs = [os.path.join(dir, f) for f in os.listdir(dir) if
+                os.path.isdir(os.path.join(dir, f))]
+
+        for d in dirs:
+            handle_dir(d, dest_dir, type)
 
 
 def handle_zipped_file(name, dest_dir, type=UNKNOWN):
-    if type == UNKNOWN:
-        type = Utils.get_log_type(name)
+    new_type = Utils.get_log_type(name)
+    if new_type:
+        type = new_type
     old = os.listdir(dest_dir)
-    top_dir = Utils.extract(name, dest_dir)
-    if type == UNKNOWN:
-        type = Utils.get_log_type(top_dir)
-    if top_dir != "":
-        if type != UNKNOWN:
-            get_parser(type, os.path.join(dest_dir, top_dir)).process()
-        else:
-            dest_dir += "/" + top_dir
-            handle_dir(dest_dir, dest_dir, type)
-    else:
-        new = os.listdir(dest_dir)
-        delta = [f for f in new if f not in old and Utils.is_tar_gzipped(f)]
-        for file in delta:
+    Utils.extract(name, dest_dir)
+    new = os.listdir(dest_dir)
+    delta = [f for f in new if f not in old]
+    for file in delta:
+        if Utils.is_tar_gzipped(file):
             handle_zipped_file(os.path.join(dest_dir, file), dest_dir, type)
+        elif os.path.isdir(os.path.join(dest_dir, file)):
+            new_dir = os.path.join(dest_dir, file)
+            handle_dir(new_dir, new_dir, type)
+
+
 
 
 if __name__ == "__main__":
