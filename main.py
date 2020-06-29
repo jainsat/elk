@@ -68,8 +68,6 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
-    parser.add_option("-b", "--bug_id", dest="bug_id",
-                      help="Bug id on Bugzilla where the summary should be posted.")
     parser.add_option("-d", "--dest_dir", dest="dest_dir",
                       help="Directory where support bundle should be extracted.")
     parser.add_option("-l", "--log", dest="log", help="Path to log")

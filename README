@@ -3,8 +3,6 @@ Usage: main.py [options]
 Options:
   -h, --help            show this help message and exit
   -v, --verbose
-  -b BUG_ID, --bug_id=BUG_ID
-                        Bug id on Bugzilla where the summary should be posted.
   -d DEST_DIR, --dest_dir=DEST_DIR
                         Directory where support bundle should be extracted.
   -l LOG, --log=LOG     Path to log
