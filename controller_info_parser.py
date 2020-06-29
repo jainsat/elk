@@ -30,7 +30,7 @@ class ControllerInfoParser(LogParser):
     def parse(self):
         # Check if the file exists
         if not self.__is_file_present():
-            print("Could not find {0}\n".format(self.file))
+            logging.debug("Could not find {0}\n".format(self.file))
             return
         root = ET.parse(self.file).getroot()
         if root.find("maintenanceMode") is not None:

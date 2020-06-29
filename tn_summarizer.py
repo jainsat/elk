@@ -19,9 +19,7 @@ class TnSummarizer(Summarizer):
             print(f.read().format(node_type, val.get(constants.SUPPORT_BUNDLE)))
 
         # controller-info
-        if not val.get(constants.CONTROLLERS):
-            print("Could not find controller-info.xml\n")
-        else:
+        if val.get(constants.CONTROLLERS):
             with open("templates/controller_info") as f:
                 match = [None] * 3
                 for i, controller in enumerate(val[constants.CONTROLLERS]):

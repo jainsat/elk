@@ -23,7 +23,7 @@ class DpkgParser(LogParser):
         self.type = type
         file = file_map.get(type)
         if not file:
-            print("No netstat file found for type {0}\n".format(type))
+            print("No dpkg file found for type {0}\n".format(type))
             sys.exit(1)
         self.file = os.path.join(root_dir, file)
 

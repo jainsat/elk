@@ -93,7 +93,7 @@ if __name__ == "__main__":
         elif os.path.isdir(options.log):
             handle_dir(options.log, options.dest_dir)
 
-    pprint.pprint(uuid_to_data)
+    #pprint.pprint(uuid_to_data)
 
     for k, v in uuid_to_data.items():
         arr = k.split("#")

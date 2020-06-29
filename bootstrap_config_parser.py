@@ -2,7 +2,7 @@
 
 import logging
 import os
-from constants import BOOTSTRAP_CONFIG_PATH, UUID_CONTROLLER, BOOTSTRAP_CONFIG_PRESENT
+from constants import BOOTSTRAP_CONFIG_PATH, UUID
 from log_parser import LogParser
 
 
@@ -26,5 +26,5 @@ class BootStrapConfigParser(LogParser):
             line = f.readline()
             while line:
                 if line.find("node_uuid") > 0:
-                    self.res[UUID_CONTROLLER] = line.split("\"")[3]
+                    self.res[UUID] = line.split("\"")[3]
                 line = f.readline()
