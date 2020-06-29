@@ -61,6 +61,9 @@ class Utils:
 
     @staticmethod
     def get_log_type(name):
+        nsx_issue_type = Utils.check_nsx_issue(name)
+        if nsx_issue_type:
+            return nsx_issue_type
         name = Utils.get_abs_name(name)
         if name.lower().startswith("nsx_manager_"):
             return MGR
