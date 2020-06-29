@@ -3,7 +3,7 @@
 import os
 import logging
 import json
-from constants import CLUSTER_JSON_PATH, IP_ADDR, UUID_CONTROLLER, MGR
+from constants import CLUSTER_JSON_PATH, IP_ADDR, UUID, MGR
 from log_parser import LogParser
 
 
@@ -34,6 +34,6 @@ class ClusteringJsonParser(LogParser):
                 for entity in node.get('entities'):
                     if entity.get('entity_type').strip() == manager_key and \
                             entity.get("ip_address").strip() == self.res[IP_ADDR]:
-                        self.res[UUID_CONTROLLER] = entity.get("entity_uuid")
+                        self.res[UUID] = entity.get("entity_uuid")
                         return
 

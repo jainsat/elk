@@ -18,8 +18,7 @@ VNVP_CERT_FILE_PATH = "opt/vmware/ccp/etc/vnvp_cert.pem"
 # Keys
 CCP_LISTENING = "ccp_listening"
 IP_ADDR = "ip_addr"
-UUID_CONTROLLER = "uuid_controller"
-UUID_TN = "uuid_tn"
+UUID = "uuid"
 NODE_TYPE = "type"
 
 

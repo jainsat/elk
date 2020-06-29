@@ -38,7 +38,7 @@ class TnSummarizer(Summarizer):
                         match[i] = "YES"
                     else:
                         match[i] = "NO"
-                print(f.read().format(val.get(constants.UUID_TN),
+                print(f.read().format(val.get(constants.UUID),
                                       val[constants.CONTROLLERS][0].ip,
                                       val[constants.CONTROLLERS][0].version,
                                       val[constants.CONTROLLERS][0].uuid,

@@ -4,7 +4,7 @@ import os
 import logging
 import xml.etree.ElementTree as ET
 from log_parser import LogParser
-from constants import CONTROLLER_INFO_PATH, MAINTENANCE_MODE, UUID_TN, \
+from constants import CONTROLLER_INFO_PATH, MAINTENANCE_MODE, UUID, \
     CONTROLLERS
 
 class Controller:
@@ -37,7 +37,7 @@ class ControllerInfoParser(LogParser):
             self.res[MAINTENANCE_MODE] = root.find("maintenanceMode").text
 
         # UUID of transport node.
-        self.res[UUID_TN] = root.find("transportNode").find("UUID").text
+        self.res[UUID] = root.find("transportNode").find("UUID").text
 
         # Fetch controller info.
         controllers = root.find("connectionList").findall("connection")

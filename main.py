@@ -10,6 +10,7 @@ from utils import Utils
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
 from tn_summarizer import TnSummarizer
 from mgr_summarizer import MgrSummarizer
+import pprint
 
 uuid_to_data = {}
 
@@ -64,8 +65,6 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
             handle_dir(new_dir, new_dir, type)
 
 
-
-
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
@@ -93,6 +92,8 @@ if __name__ == "__main__":
             handle_zipped_file(options.log, options.dest_dir)
         elif os.path.isdir(options.log):
             handle_dir(options.log, options.dest_dir)
+
+    pprint.pprint(uuid_to_data)
 
     for k, v in uuid_to_data.items():
         arr = k.split("#")

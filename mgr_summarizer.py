@@ -24,7 +24,7 @@ class MgrSummarizer(Summarizer):
 
         # clustering.json
         with open('templates/clustering_json_summary') as f:
-            print(f.read().format(val.get(constants.UUID_CONTROLLER)))
+            print(f.read().format(val.get(constants.UUID)))
 
         if node_type == constants.MGR:
             with open("templates/netstat_ccp_summary") as f:

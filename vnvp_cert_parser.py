@@ -20,7 +20,6 @@ class CertificateParser(LogParser):
         if not os.path.exists(self.file):
             logging.debug("Could not find {0} ".format(self.file))
             return
-        self.res[VNVP_CERT_FILE_PATH] = True
         logging.debug("Parsing  {0}".format(self.file))
         with open(self.file) as f:
             self.res[CERTIFICATE] = f.read()
