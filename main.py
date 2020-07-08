@@ -10,14 +10,17 @@ from utils import Utils
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
 from tn_summarizer import TnSummarizer
 from mgr_summarizer import MgrSummarizer
-import pprint
+from elk.elk_utils import ELKApi
+from string import Template
 
 uuid_to_data = {}
+
 
 def is_root(dir_name):
     if os.path.exists(os.path.join(dir_name, "etc")):
         return True
     return False
+
 
 def get_parser(type, root_dir):
     if type == MGR or type == GLOB_MGR:
@@ -65,12 +68,27 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
             handle_dir(new_dir, new_dir, type)
 
 
+def get_summary():
+    summary = ""
+    for k, v in uuid_to_data.items():
+        arr = k.split("#")
+        node_type = arr[0]
+        if node_type == MGR or node_type == GLOB_MGR:
+            summary += MgrSummarizer(uuid_to_data, k).summarize()
+        else:
+            summary += TnSummarizer(uuid_to_data, k).summarize()
+    return summary
+
+
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
     parser.add_option("-d", "--dest_dir", dest="dest_dir",
                       help="Directory where support bundle should be extracted.")
     parser.add_option("-l", "--log", dest="log", help="Path to log")
+    parser.add_option("-s", "--space", dest="space", help="Kibana space name")
+    parser.add_option("-c", "--clear-old", action="store_true", dest="clear", help="Clear the old data")
+
 
     (options, _) = parser.parse_args()
 
@@ -90,19 +108,51 @@ if __name__ == "__main__":
             handle_zipped_file(options.log, options.dest_dir)
         elif os.path.isdir(options.log):
             handle_dir(options.log, options.dest_dir)
+        else:
+            print("Invalid input : {0}. Please provide either a zipped file" \
+                  " a directory".format(options.log))
+            exit(1)
 
     #pprint.pprint(uuid_to_data)
 
-    for k, v in uuid_to_data.items():
-        arr = k.split("#")
-        node_type = arr[0]
-        if node_type == MGR or node_type == GLOB_MGR:
-            MgrSummarizer(uuid_to_data, k).summarize()
-        else:
-            TnSummarizer(uuid_to_data, k).summarize()
+    if options.space:
+        elk_api = ELKApi()
+        # Create space
+        elk_api.create_space(options.space)
+        index_id = None
 
-        print("#" * 75)
-        print()
+        # Delete old data
+        if options.clear:
+            elk_api.delete_data(options.space)
+
+        else:
+            index_id = elk_api.find_index_id("test-index*", options.space)
+
+        # Create new index only if doesn't exist already.
+        if index_id is None:
+            index_id = elk_api.create_index_pattern("test-index*", options.space)
+
+        # Get summary of the logs
+        summary = get_summary()
+
+        # Create a markdown UI for summary.
+        summary_id = elk_api.create_markdown("Summary", summary, options.space)
+        logging.debug("summary id = " + summary_id)
+
+        # create dashboard and attach above visualizations in it.
+        with open("elk/resources/dashboard.json") as f:
+            t = Template(f.read())
+            body = t.substitute(SUMMARY_ID=summary_id)
+            print(body)
+            elk_api.create_ui(body, "dashboard", options.space)
+
+        print("You can access Kibana at http://localhost:5601/s/{0}".format(options.space.lower()))
+
+
+
+
+
+
 
 
 

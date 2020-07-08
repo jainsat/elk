@@ -14,9 +14,10 @@ class TnSummarizer(Summarizer):
         node_type = arr[0]
         val = self.data.get(self.key)
 
+        summary = ""
         # basic
         with open("templates/basic") as f:
-            print(f.read().format(node_type, val.get(constants.SUPPORT_BUNDLE)))
+            summary = f.read().format(node_type, val.get(constants.SUPPORT_BUNDLE))
 
         # controller-info
         if val.get(constants.CONTROLLERS):
@@ -36,7 +37,7 @@ class TnSummarizer(Summarizer):
                         match[i] = "YES"
                     else:
                         match[i] = "NO"
-                print(f.read().format(val.get(constants.UUID),
+                summary += f.read().format(val.get(constants.UUID),
                                       val[constants.CONTROLLERS][0].ip,
                                       val[constants.CONTROLLERS][0].version,
                                       val[constants.CONTROLLERS][0].uuid,
@@ -49,14 +50,18 @@ class TnSummarizer(Summarizer):
                                       val[constants.CONTROLLERS][2].version,
                                       val[constants.CONTROLLERS][2].uuid,
                                       match[2],
-                                      val.get(constants.MAINTENANCE_MODE)))
+                                      val.get(constants.MAINTENANCE_MODE))
 
         # netstat
         with open("templates/netstat_tn_summary") as f:
-            print(f.read().format(val.get(constants.IP_ADDR),
+            summary += f.read().format(val.get(constants.IP_ADDR),
                                   val.get(constants.PROXY_CCP_CONN),
-                                  val.get(constants.APH_MPA_CONN)))
+                                  val.get(constants.APH_MPA_CONN))
 
         # Proxy version
         with open("templates/proxy_version") as f:
-            print(f.read().format(val.get(constants.PROXY_VERSION)))
+            summary += f.read().format(val.get(constants.PROXY_VERSION))
+
+        summary += "#" * 75 + "\n\n"
+
+        return summary
