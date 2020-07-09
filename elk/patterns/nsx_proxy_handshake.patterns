@@ -1,0 +1,2 @@
+(?P<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.{0,1}[0-9]{0,3}Z).*?(?P<event>VersionMastershipHandshakeClient:.*?), uuid (?P<remote_uuid>.*?), endpoint ssl://(?P<remote_ip>.*)?:
+(?P<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.{0,1}[0-9]{0,3}Z).*?(?P<event>Start nsx proxy$)

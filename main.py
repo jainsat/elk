@@ -10,10 +10,12 @@ from utils import Utils
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
 from tn_summarizer import TnSummarizer
 from mgr_summarizer import MgrSummarizer
-from elk.elk_utils import ELKApi
+from elk.kibana_utils import KibanaApi
 from string import Template
+from elk.es import ES
+import pprint
 
-uuid_to_data = {}
+ip_to_data = {}
 
 
 def is_root(dir_name):
@@ -24,9 +26,9 @@ def is_root(dir_name):
 
 def get_parser(type, root_dir):
     if type == MGR or type == GLOB_MGR:
-        return CcpParser(root_dir, uuid_to_data, type)
+        return CcpParser(root_dir, ip_to_data, type)
     elif type == ESX or type == EDGE or type == KVM_UBU:
-        return TnParser(root_dir, uuid_to_data, type)
+        return TnParser(root_dir, ip_to_data, type)
     else:
         logging.debug("No parser of type {0} found".format(type))
         return UNKNOWN
@@ -70,13 +72,13 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
 
 def get_summary():
     summary = ""
-    for k, v in uuid_to_data.items():
+    for k, v in ip_to_data.items():
         arr = k.split("#")
         node_type = arr[0]
         if node_type == MGR or node_type == GLOB_MGR:
-            summary += MgrSummarizer(uuid_to_data, k).summarize()
+            summary += MgrSummarizer(ip_to_data, k).summarize()
         else:
-            summary += TnSummarizer(uuid_to_data, k).summarize()
+            summary += TnSummarizer(ip_to_data, k).summarize()
     return summary
 
 
@@ -88,7 +90,6 @@ if __name__ == "__main__":
     parser.add_option("-l", "--log", dest="log", help="Path to log")
     parser.add_option("-s", "--space", dest="space", help="Kibana space name")
     parser.add_option("-c", "--clear-old", action="store_true", dest="clear", help="Clear the old data")
-
 
     (options, _) = parser.parse_args()
 
@@ -113,40 +114,50 @@ if __name__ == "__main__":
                   " a directory".format(options.log))
             exit(1)
 
-    #pprint.pprint(uuid_to_data)
+    pprint.pprint(ip_to_data)
 
     if options.space:
-        elk_api = ELKApi()
-        # Create space
-        elk_api.create_space(options.space)
-        index_id = None
+        kibana_api = KibanaApi()
+        es_ins = ES(ip_to_data, "test-index-" + options.space.lower())
 
-        # Delete old data
-        if options.clear:
-            elk_api.delete_data(options.space)
+        # Delete old space and index related to this space.
+        kibana_api.delete_space(options.space)
+        es_ins.delete_index()
 
-        else:
-            index_id = elk_api.find_index_id("test-index*", options.space)
+        # Create fresh space
+        kibana_api.create_space(options.space)
 
-        # Create new index only if doesn't exist already.
-        if index_id is None:
-            index_id = elk_api.create_index_pattern("test-index*", options.space)
+        # Create index pattern
+        index_id = kibana_api.create_index_pattern("test-index*", options.space)
 
         # Get summary of the logs
         summary = get_summary()
 
         # Create a markdown UI for summary.
-        summary_id = elk_api.create_markdown("Summary", summary, options.space)
+        summary_id = kibana_api.create_markdown("Summary", summary, options.space)
         logging.debug("summary id = " + summary_id)
 
+        # Insert all the data
+        es_ins.insert()
+
+        search_id = kibana_api.create_search("Event", index_id, options.space)
+        print("search id = " + search_id)
+
         # create dashboard and attach above visualizations in it.
-        with open("elk/resources/dashboard.json") as f:
-            t = Template(f.read())
-            body = t.substitute(SUMMARY_ID=summary_id)
-            print(body)
-            elk_api.create_ui(body, "dashboard", options.space)
+        # with open("elk/resources/dashboard.json") as f:
+        #     t = Template(f.read())
+        #     body = t.substitute(SUMMARY_ID=summary_id)
+        #     kibana_api.create_ui(body, "dashboard", options.space)
+
+        kibana_api.add_to_dashboard("visualization", summary_id, 23, options.space)
+
+        kibana_api.add_to_dashboard("search", search_id, 23, options.space)
+
+        kibana_api.create_dashboard(options.space)
 
         print("You can access Kibana at http://localhost:5601/s/{0}".format(options.space.lower()))
+
+
 
 
 

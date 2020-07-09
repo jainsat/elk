@@ -62,6 +62,6 @@ class TnSummarizer(Summarizer):
         with open("templates/proxy_version") as f:
             summary += f.read().format(val.get(constants.PROXY_VERSION))
 
-        summary += "#" * 75 + "\n\n"
+        summary += " #" + "\n\n"
 
         return summary

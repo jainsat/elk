@@ -3,7 +3,7 @@
                 "title": "Test",
                 "hits": 0,
                 "description": "",
-                "panelsJSON": "[{\"version\":\"7.8.0\",\"gridData\":{\"x\":0,\"y\":0,\"h\":23,\"w\":23,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{},\"panelRefName\":\"panel_0\"}]",
+                "panelsJSON": "[]",
                 "optionsJSON": "{\"hidePanelTitles\":false,\"useMargins\":true}",
                 "version": 1,
                 "timeRestore": false,
@@ -12,11 +12,7 @@
                 }
             },
             "references": [
-                {
-                    "name": "panel_0",
-                    "type": "visualization",
-                    "id": "$SUMMARY_ID"
-                }
+
             ],
             "migrationVersion": {
                 "dashboard": "7.3.0"

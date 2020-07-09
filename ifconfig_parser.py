@@ -33,3 +33,4 @@ class IfConfigParser(LogParser):
                     break
                 line = f.readline()
 
+

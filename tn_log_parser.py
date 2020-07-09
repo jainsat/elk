@@ -19,10 +19,10 @@ tn_mapping = {ESX: esx_parser_pipeline,
 
 
 class TnParser:
-    def __init__(self, root_dir, uuid_to_data, type):
+    def __init__(self, root_dir, ip_to_data, type):
         self.root_dir = root_dir
         self.type = type
-        self.uuid_to_data = uuid_to_data
+        self.ip_to_data = ip_to_data
         logging.debug("root directory = {0}".format(self.root_dir))
 
     def process(self):
@@ -35,7 +35,7 @@ class TnParser:
 
         if res.get(IP_ADDR):
             key = "{0}#{1}".format(self.type, res.get(IP_ADDR))
-            self.uuid_to_data[key] = res
+            self.ip_to_data[key] = res
 
         else:
             print("No IP address found for {0}", self.root_dir)

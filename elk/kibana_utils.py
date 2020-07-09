@@ -3,14 +3,20 @@
 import requests
 import json
 import logging
-
 from string import Template
-import pprint
-class ELKApi:
+
+
+class KibanaApi:
 
     def __init__(self):
         self.hostname = "localhost"
         self.port = "5601"
+        self.vis_count = 0
+        self.x = 0
+        self.y = 0
+        with open("elk/resources/dashboard.json") as f:
+            self.dashboard_json = json.load(f)
+
 
     def create_space(self, space_name):
         url = "http://{0}:{1}/api/spaces/space".format(self.hostname, self.port)
@@ -104,7 +110,7 @@ class ELKApi:
             url = "http://{0}:{1}/api/saved_objects/index-pattern/{3}" \
                 .format(self.hostname, self.port)
 
-        payload = {"attributes": {"title":  index_pattern}}
+        payload = {"attributes": {"title":  index_pattern, "timeFieldName": "timestamp"}}
         headers = {
             'kbn-xsrf': 'reporting',
             'Content-Type': 'text/plain'
@@ -117,7 +123,6 @@ class ELKApi:
 
         logging.debug("Index pattern created successfully: " + index_pattern)
         return response.json().get("id")
-
 
     def create_ui(self, payload, ui_type, space_name=None):
         space_name = space_name.lower()
@@ -142,35 +147,67 @@ class ELKApi:
         logging.debug("Visualization created successfully")
         return response.json().get("id")
 
-    def create_markdown(self, title, text, space_name=None):
-        text = text.replace('\n','\\\\n')
-        print ("*********************************** TEXT *****************************************")
-        print(text)
-        # payload = {
-        #     "attributes": {
-        #         "title": title,
-        #         "visState": "{\"type\":\"markdown\",\"aggs\":[],\"params\":{\"fontSize\":11,\"openLinksInNewTab\":false,\"markdown\":\"" + text +"\"},\"title\": \"" + title + "\"}",
-        #         "uiStateJSON": "{}",
-        #         "description": "",
-        #         "version": 1,
-        #         "kibanaSavedObjectMeta": {
-        #             "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
-        #         }
-        #     },
-        #     "references": [],
-        #     "migrationVersion": {
-        #         "visualization": "7.8.0"
-        #     }
-        # }
+    def delete_space(self, space_name=None):
+        url = "http://{0}:{1}/api/spaces/space/{2}" \
+                .format(self.hostname, self.port, space_name.lower())
 
+        headers = {
+            'kbn-xsrf': 'reporting',
+            'Content-Type': 'text/plain'
+        }
+
+        response = requests.delete(url, headers=headers)
+        if response.status_code != 204 and response.status_code != 404:
+            print(response.text.encode('utf8'))
+            exit(1)
+
+
+    def create_markdown(self, title, text, space_name=None):
+        text = text.replace('\n', '\\\\n')
         with open('elk/resources/summary.json') as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, TEXT=text)
-            print(payload)
-            print("**************")
 
         return self.create_ui(payload, "visualization", space_name)
 
+    def create_search(self, title, index, space_name=None):
+        with open('elk/resources/event_search.json') as f:
+            t = Template(f.read())
+            payload = t.substitute(TITLE=title, INDEX= index)
+
+        return self.create_ui(payload, "search", space_name)
+
+
+    def add_to_dashboard(self, type, id, height, space_name):
+
+        panels_json = self.dashboard_json.get("attributes").get("panelsJSON")
+        with open("elk/resources/panel_format") as p:
+            panel_format = Template(p.read())
+            panel_str = panel_format.substitute(X=self.x, Y=self.y, i=self.vis_count, H=height)
+            panels_json = panels_json[:-1]
+            if self.vis_count > 0:
+                panels_json += ", "
+            panels_json +=  panel_str + "]"
+            self.dashboard_json.get("attributes")["panelsJSON"] = panels_json
+            dic =    {
+                    "name": "",
+                    "type": "",
+                    "id": ""
+            }
+            dic["name"] = "panel_" + str(self.vis_count)
+            dic["type"] = type
+            dic["id"] = id
+            self.dashboard_json.get("references").append(dic)
+            if self.vis_count % 2 == 0:
+                self.x = self.x + 23
+
+            else:
+                self.x = 0
+            self.vis_count += 1
+            print(json.dumps(self.dashboard_json))
+
+    def create_dashboard(self, space_name=None):
+        self.create_ui(self.dashboard_json, "dashboard", space_name)
 
 
 
@@ -180,4 +217,10 @@ class ELKApi:
 
 
 
-ELKApi().delete_data("Bob")
+#KibanaApi().create_search("Events", "3e4305c0-c147-11ea-9597-513cce2a8d77", "Rose")
+
+
+
+
+
+

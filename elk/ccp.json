@@ -2,7 +2,7 @@
 "logs" :[
   {
     "logDir": "var/log/cloudnet",
-    "logFile": "nsx-ccp-[0-9]{8}-[0-9]{9}.log.gz",
+    "logFile": ["nsx-ccp-[0-9]{8}-[0-9]{9}.log.gz", "nsx-ccp.log"],
     "grep": [
       {
         "lookup": "CCP process started",
@@ -20,7 +20,6 @@
         "lookup": "MP and ZK full sync are complete. Join cluster",
         "label": "MP and ZK full sync complete"
       },
-
       {
         "lookup": "Cluster is up now",
         "label": "Cluster is up"

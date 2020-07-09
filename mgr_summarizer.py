@@ -31,6 +31,6 @@ class MgrSummarizer(Summarizer):
                 summary += f.read().format(val.get(constants.CCP_LISTENING),
                                       val.get(constants.TN))
 
-        summary += "#" * 75 + "\n\n"
+        summary += " #" + "\n\n"
         return summary
 

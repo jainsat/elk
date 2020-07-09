@@ -1,6 +1,6 @@
-IP = {0}
+    IP = {0}
 
-NSX Proxy {1} connected to CCP.
+    NSX Proxy {1} connected to CCP.
 
-MPA {2} connected to all three APH.
+    MPA {2} connected to all three APH.
 

@@ -1,4 +1,4 @@
-CCP {0} listening at port 1235.
+    CCP {0} listening at port 1235.
 
-Transport nodes connected to CCP = {1}
+    Transport nodes connected to CCP = {1}
 

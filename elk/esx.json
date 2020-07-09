@@ -1,0 +1,11 @@
+{
+"logs" :[
+  {
+    "logDir": "var/run/log",
+    "logFiles": ["nsx-proxy.log", "nsx-proxy.[0-9].gz"],
+    "patternFiles": ["nsx_proxy_handshake.patterns"]
+  }
+]
+}
+
+
