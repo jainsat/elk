@@ -11,7 +11,6 @@ from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
 from tn_summarizer import TnSummarizer
 from mgr_summarizer import MgrSummarizer
 from elk.kibana_utils import KibanaApi
-from string import Template
 from elk.es import ES
 import pprint
 
@@ -128,7 +127,7 @@ if __name__ == "__main__":
         kibana_api.create_space(options.space)
 
         # Create index pattern
-        index_id = kibana_api.create_index_pattern("test-index*", options.space)
+        index_id = kibana_api.create_index_pattern("test-index-" + options.space.lower() + "*", options.space)
 
         # Get summary of the logs
         summary = get_summary()
@@ -140,8 +139,9 @@ if __name__ == "__main__":
         # Insert all the data
         es_ins.insert()
 
-        search_id = kibana_api.create_search("Event", index_id, options.space)
-        print("search id = " + search_id)
+        # Create a search UI for Events
+        search_id = kibana_api.create_search("Events", index_id, options.space)
+        logging.debug("search id = " + search_id)
 
         # create dashboard and attach above visualizations in it.
         # with open("elk/resources/dashboard.json") as f:

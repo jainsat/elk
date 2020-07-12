@@ -161,7 +161,6 @@ class KibanaApi:
             print(response.text.encode('utf8'))
             exit(1)
 
-
     def create_markdown(self, title, text, space_name=None):
         text = text.replace('\n', '\\\\n')
         with open('elk/resources/summary.json') as f:
@@ -177,26 +176,20 @@ class KibanaApi:
 
         return self.create_ui(payload, "search", space_name)
 
-
     def add_to_dashboard(self, type, id, height, space_name):
 
         panels_json = self.dashboard_json.get("attributes").get("panelsJSON")
         with open("elk/resources/panel_format") as p:
             panel_format = Template(p.read())
-            panel_str = panel_format.substitute(X=self.x, Y=self.y, i=self.vis_count, H=height)
+            panel_str = panel_format.substitute(X=self.x, Y=self.y,
+                                                i=self.vis_count, H=height)
             panels_json = panels_json[:-1]
             if self.vis_count > 0:
                 panels_json += ", "
             panels_json +=  panel_str + "]"
             self.dashboard_json.get("attributes")["panelsJSON"] = panels_json
-            dic =    {
-                    "name": "",
-                    "type": "",
-                    "id": ""
-            }
-            dic["name"] = "panel_" + str(self.vis_count)
-            dic["type"] = type
-            dic["id"] = id
+            dic = {"name": "panel_" + str(self.vis_count), "type": type,
+                   "id": id}
             self.dashboard_json.get("references").append(dic)
             if self.vis_count % 2 == 0:
                 self.x = self.x + 23
@@ -204,7 +197,7 @@ class KibanaApi:
             else:
                 self.x = 0
             self.vis_count += 1
-            print(json.dumps(self.dashboard_json))
+            logging.debug(json.dumps(self.dashboard_json))
 
     def create_dashboard(self, space_name=None):
         self.create_ui(self.dashboard_json, "dashboard", space_name)

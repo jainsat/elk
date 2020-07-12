@@ -77,6 +77,7 @@ class ES:
                                    "event": label,
                                    "status": "PASS",
                                    "file": mf,
+                                   "line": line,
                                    "ip_address": node_ip,
                                    "uuid": node_data.get(UUID)
                                    }
@@ -123,6 +124,9 @@ class ES:
                         res["uuid"] = node_data.get(UUID)
                         res["entity"] = ESX
                         res["file"] = file
+                        res["line"] = line
+                        if res.get("status"):
+                            res["status"] = res["status"].upper()
                         try:
                             ts = datetime.strptime(res.get("timestamp"), "%Y-%m-%dT%H:%M:%S.%fZ")
                         except ValueError:
@@ -130,7 +134,6 @@ class ES:
                         res["timestamp"] = ts
                         self.es.index(index=self.index, body=res)
                 f.close()
-
 
     def find_files(self, dir, patterns):
         res = []
