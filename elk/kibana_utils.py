@@ -8,9 +8,9 @@ from string import Template
 
 class KibanaApi:
 
-    def __init__(self):
-        self.hostname = "localhost"
-        self.port = "5601"
+    def __init__(self, host, port):
+        self.hostname = host
+        self.port = port
         self.vis_count = 0
         self.x = 0
         self.y = 0

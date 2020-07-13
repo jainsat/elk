@@ -33,9 +33,9 @@ class NoAttributeFoundException(Exception):
 
 
 class ES:
-    def __init__(self, index_name):
-        self.host = "localhost"
-        self.port = "9200"
+    def __init__(self, host, port, index_name):
+        self.host = host
+        self.port = port
         self.es = Elasticsearch(['http://localhost:9200'])
         self.index = index_name
 

@@ -16,6 +16,7 @@ import pprint
 
 ip_to_data = {}
 
+
 def is_root(dir_name):
     if os.path.exists(os.path.join(dir_name, "etc")):
         return True
@@ -89,6 +90,12 @@ if __name__ == "__main__":
     parser.add_option("-b", "--bug_id", dest="space", help="Bug id")
     parser.add_option("-c", "--clear-old", action="store_true", dest="clear",
                       help="Clear the old data")
+    parser.add_option("-n", "--host", dest="host",
+                      help="ELK hostname or ip address", default="localhost")
+    parser.add_option("-k", "--kibana_port", dest="kibana_port",
+                      help="Kibana port", default="5601")
+    parser.add_option("-e", "--es_port", dest="es_port",
+                      help="Elasticsearch port", default="9200")
 
     (options, _) = parser.parse_args()
 
@@ -105,10 +112,10 @@ if __name__ == "__main__":
 
     if options.space:
         # Get instance of Kibana api.
-        kibana_api = KibanaApi()
+        kibana_api = KibanaApi(options.host, options.kibana_port)
 
         # Get instance of ElasticSearch api.
-        es_ins = ES("test-index-" + options.space.lower())
+        es_ins = ES(options.host, options.es_port, "test-index-" + options.space.lower())
 
         if options.clear:
             # Delete old space and index related to this space.
@@ -119,8 +126,8 @@ if __name__ == "__main__":
         created = kibana_api.create_space(options.space)
         if not created:
             print("Kibana space for this bug id already exist. "
-                  "It can be accessed at http://localhost:5601/s/{0}".
-                  format(options.space.lower()))
+                  "It can be accessed at http://{0}:{1}/s/{2}".
+                  format(options.host, options.kibana_port, options.space.lower()))
             print("If you want to re-run everything, then please run the "
                   "script with --clear-old option. Or else give a different "
                   "bug id.")
@@ -162,17 +169,7 @@ if __name__ == "__main__":
 
         kibana_api.create_dashboard(options.space)
 
-        print("You can access Kibana at http://localhost:5601/s/{0}".
-              format(options.space.lower()))
-
-
-
-
-
-
-
-
-
-
+        print("You can access Kibana at http://{0}:{1}/s/{2}".
+              format(options.host, options.kibana_port, options.space.lower()))
 
 
