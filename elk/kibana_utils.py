@@ -14,7 +14,7 @@ class KibanaApi:
         self.vis_count = 0
         self.x = 0
         self.y = 0
-        with open("elk/resources/dashboard.json") as f:
+        with open("elk/kibana_resources/dashboard.json") as f:
             self.dashboard_json = json.load(f)
 
 
@@ -163,14 +163,14 @@ class KibanaApi:
 
     def create_markdown(self, title, text, space_name=None):
         text = text.replace('\n', '\\\\n')
-        with open('elk/resources/summary.json') as f:
+        with open('elk/kibana_resources/summary.json') as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, TEXT=text)
 
         return self.create_ui(payload, "visualization", space_name)
 
     def create_search(self, title, index, space_name=None):
-        with open('elk/resources/event_search.json') as f:
+        with open('elk/kibana_resources/event_search.json') as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, INDEX= index)
 
@@ -179,7 +179,7 @@ class KibanaApi:
     def add_to_dashboard(self, type, id, height, space_name):
 
         panels_json = self.dashboard_json.get("attributes").get("panelsJSON")
-        with open("elk/resources/panel_format") as p:
+        with open("elk/kibana_resources/panel_format") as p:
             panel_format = Template(p.read())
             panel_str = panel_format.substitute(X=self.x, Y=self.y,
                                                 i=self.vis_count, H=height)

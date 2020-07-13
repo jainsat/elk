@@ -5,8 +5,26 @@ import tarfile
 import logging
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR, NSX_ISSUE_PATH
 
+CONFIG_MAP = {
+    MGR: "ccp.json",
+    ESX: "esx.json"
+}
+
+
 class Utils:
 
+    @staticmethod
+    def get_class(kls):
+        parts = kls.split('.')
+        module = ".".join(parts[:-1])
+        m = __import__(module)
+        for comp in parts[1:]:
+            m = getattr(m, comp)
+        return m
+
+    @staticmethod
+    def get_config(node_tye):
+        return CONFIG_MAP.get(node_tye)
 
     @staticmethod
     def extract(filename, dest_dir):
