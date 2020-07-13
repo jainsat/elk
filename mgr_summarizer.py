@@ -1,5 +1,6 @@
 # Copyright (C) 2020 VMware, Inc.  All rights reserved.
 
+import os
 import constants
 from summarizer import Summarizer
 
@@ -8,6 +9,7 @@ class MgrSummarizer(Summarizer):
     def __init__(self, data, key):
         self.data = data
         self.key = key
+        self.root_dir = os.getenv("ELK_REPO")
 
     def summarize(self):
         arr = self.key.split("#")
@@ -15,19 +17,19 @@ class MgrSummarizer(Summarizer):
         val = self.data.get(self.key)
         summary = ""
         # basic
-        with open("templates/basic") as f:
+        with open(os.path.join(self.root_dir, "templates/basic")) as f:
             summary += f.read().format(node_type, val.get(constants.SUPPORT_BUNDLE))
 
         # ifconfig
-        with open("templates/ifconfig_summary") as f:
+        with open(os.path.join(self.root_dir, "templates/ifconfig_summary")) as f:
             summary += f.read().format(val.get(constants.IP_ADDR))
 
         # clustering.json
-        with open('templates/clustering_json_summary') as f:
+        with open(os.path.join(self.root_dir, 'templates/clustering_json_summary')) as f:
             summary += f.read().format(val.get(constants.UUID))
 
         if node_type == constants.MGR:
-            with open("templates/netstat_ccp_summary") as f:
+            with open(os.path.join(self.root_dir, "templates/netstat_ccp_summary")) as f:
                 summary += f.read().format(val.get(constants.CCP_LISTENING),
                                       val.get(constants.TN))
 

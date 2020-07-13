@@ -4,17 +4,18 @@ import requests
 import json
 import logging
 from string import Template
+import os
 
 
 class KibanaApi:
-
     def __init__(self, host, port):
         self.hostname = host
         self.port = port
         self.vis_count = 0
         self.x = 0
         self.y = 0
-        with open("elk/kibana_resources/dashboard.json") as f:
+        self.root_dir = os.getenv("ELK_REPO")
+        with open(os.path.join(self.root_dir, "elk/kibana_resources/dashboard.json")) as f:
             self.dashboard_json = json.load(f)
 
     '''
@@ -171,14 +172,14 @@ class KibanaApi:
 
     def create_markdown(self, title, text, space_name=None):
         text = text.replace('\n', '\\\\n')
-        with open('elk/kibana_resources/summary.json') as f:
+        with open(os.path.join(self.root_dir, 'elk/kibana_resources/summary.json')) as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, TEXT=text)
 
         return self.create_ui(payload, "visualization", space_name)
 
     def create_search(self, title, index, space_name=None):
-        with open('elk/kibana_resources/event_search.json') as f:
+        with open(os.path.join(self.root_dir, 'elk/kibana_resources/event_search.json')) as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, INDEX= index)
 
@@ -187,7 +188,7 @@ class KibanaApi:
     def add_to_dashboard(self, type, id, height, space_name):
 
         panels_json = self.dashboard_json.get("attributes").get("panelsJSON")
-        with open("elk/kibana_resources/panel_format") as p:
+        with open(os.path.join(self.root_dir, "elk/kibana_resources/panel_format")) as p:
             panel_format = Template(p.read())
             panel_str = panel_format.substitute(X=self.x, Y=self.y,
                                                 i=self.vis_count, H=height)

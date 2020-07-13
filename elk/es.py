@@ -38,6 +38,7 @@ class ES:
         self.port = port
         self.es = Elasticsearch(['http://localhost:9200'])
         self.index = index_name
+        self.root_dir = os.getenv("ELK_REPO")
 
     def delete_index(self):
         url = "http://{0}:{1}/{2}".format(self.host, self.port, self.index)
@@ -61,8 +62,7 @@ class ES:
 
         root_dir = node_data.get(SUPPORT_BUNDLE)
         node_uuid = node_data.get(UUID)
-
-        with open("elk/configs/{0}".format(config)) as f:
+        with open(os.path.join(self.root_dir, "elk/configs/{0}").format(config)) as f:
             log_info = json.load(f).get("logs")
             if not log_info:
                 raise NoAttributeFoundException("logs", config)
@@ -197,11 +197,10 @@ class ES:
                     break
         return res
 
-    @staticmethod
-    def extract_patterns(pattern_files):
+    def extract_patterns(self, pattern_files):
         patterns = []
         for file in pattern_files:
-            file = os.path.join("elk/patterns", file)
+            file = os.path.join(self.root_dir + "/elk/patterns", file)
             with open(file) as f:
                 for line in f.readlines():
                     patterns.append(line.rstrip())

@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 # Copyright (C) 2020 VMware, Inc.  All rights reserved.
 
 import os
@@ -109,7 +110,6 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG)
 
     logging.debug(options)
-
     if options.space:
         # Get instance of Kibana api.
         kibana_api = KibanaApi(options.host, options.kibana_port)
