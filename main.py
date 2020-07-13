@@ -16,7 +16,6 @@ import pprint
 
 ip_to_data = {}
 
-
 def is_root(dir_name):
     if os.path.exists(os.path.join(dir_name, "etc")):
         return True
@@ -87,8 +86,9 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dest_dir", dest="dest_dir",
                       help="Directory where support bundle should be extracted.")
     parser.add_option("-l", "--log", dest="log", help="Path to log")
-    parser.add_option("-s", "--space", dest="space", help="Kibana space name")
-    parser.add_option("-c", "--clear-old", action="store_true", dest="clear", help="Clear the old data")
+    parser.add_option("-b", "--bug_id", dest="space", help="Bug id")
+    parser.add_option("-c", "--clear-old", action="store_true", dest="clear",
+                      help="Clear the old data")
 
     (options, _) = parser.parse_args()
 
@@ -103,33 +103,46 @@ if __name__ == "__main__":
 
     logging.debug(options)
 
-    if options.log:
-        if os.path.isfile(options.log):
-            handle_zipped_file(options.log, options.dest_dir)
-        elif os.path.isdir(options.log):
-            handle_dir(options.log, options.dest_dir)
-        else:
-            print("Invalid input : {0}. Please provide either a zipped file" \
-                  " a directory".format(options.log))
-            exit(1)
-
-    pprint.pprint(ip_to_data)
-
     if options.space:
+        # Get instance of Kibana api.
         kibana_api = KibanaApi()
-        es_ins = ES(ip_to_data, "test-index-" + options.space.lower())
 
-        # Delete old space and index related to this space.
-        kibana_api.delete_space(options.space)
-        es_ins.delete_index()
+        # Get instance of ElasticSearch api.
+        es_ins = ES("test-index-" + options.space.lower())
+
+        if options.clear:
+            # Delete old space and index related to this space.
+            kibana_api.delete_space(options.space.lower())
+            es_ins.delete_index()
 
         # Create fresh space
-        kibana_api.create_space(options.space)
+        created = kibana_api.create_space(options.space)
+        if not created:
+            print("Kibana space for this bug id already exist. "
+                  "It can be accessed at http://localhost:5601/s/{0}".
+                  format(options.space.lower()))
+            print("If you want to re-run everything, then please run the "
+                  "script with --clear-old option. Or else give a different "
+                  "bug id.")
+            exit(0)
 
         # Create index pattern
-        index_id = kibana_api.create_index_pattern("test-index-" + options.space.lower() + "*", options.space)
+        index_id = kibana_api.create_index_pattern("test-index-" +
+                                                   options.space.lower() +
+                                                   "*", options.space)
 
-        # Get summary of the logs
+        if options.log:
+            if os.path.isfile(options.log):
+                handle_zipped_file(options.log, options.dest_dir)
+            elif os.path.isdir(options.log):
+                handle_dir(options.log, options.dest_dir)
+            else:
+                print("Invalid input : {0}. Please provide either a zipped file"
+                      " a directory".format(options.log))
+                exit(1)
+
+        pprint.pprint(ip_to_data)
+        # Get summary of logs
         summary = get_summary()
 
         # Create a markdown UI for summary.
@@ -137,17 +150,11 @@ if __name__ == "__main__":
         logging.debug("summary id = " + summary_id)
 
         # Insert all the data
-        es_ins.insert()
+        es_ins.insert(ip_to_data)
 
         # Create a search UI for Events
         search_id = kibana_api.create_search("Events", index_id, options.space)
         logging.debug("search id = " + search_id)
-
-        # create dashboard and attach above visualizations in it.
-        # with open("elk/resources/dashboard.json") as f:
-        #     t = Template(f.read())
-        #     body = t.substitute(SUMMARY_ID=summary_id)
-        #     kibana_api.create_ui(body, "dashboard", options.space)
 
         kibana_api.add_to_dashboard("visualization", summary_id, 23, options.space)
 
@@ -155,7 +162,8 @@ if __name__ == "__main__":
 
         kibana_api.create_dashboard(options.space)
 
-        print("You can access Kibana at http://localhost:5601/s/{0}".format(options.space.lower()))
+        print("You can access Kibana at http://localhost:5601/s/{0}".
+              format(options.space.lower()))
 
 
 

@@ -17,7 +17,11 @@ class KibanaApi:
         with open("elk/kibana_resources/dashboard.json") as f:
             self.dashboard_json = json.load(f)
 
-
+    '''
+    Returns true if space creation was successful.
+    Returns false if space already existed.
+    Raises an exception if space creation failed.
+    '''
     def create_space(self, space_name):
         url = "http://{0}:{1}/api/spaces/space".format(self.hostname, self.port)
         payload = {"id": space_name.lower(), "name": space_name}
@@ -27,12 +31,16 @@ class KibanaApi:
         }
         response = requests.post(url, headers=headers, data=json.dumps(payload))
 
-        if response.status_code != 200 and response.status_code != 409:
-            print(response.text.encode('utf8'))
-            exit(1)
+        if response.status_code == 409:
+            return False
+
+        if response.status_code != 200:
+            raise Exception(response.text.encode('utf8'))
 
         # Space created successfully (200) or space already existed (409).
         logging.debug("Created space successfully: " + space_name)
+
+        return True
 
     def find_index_id(self, index_name, space_name=None):
         space_name = space_name.lower()
@@ -107,7 +115,7 @@ class KibanaApi:
             url = "http://{0}:{1}/s/{2}/api/saved_objects/index-pattern" \
                 .format(self.hostname, self.port, space_name)
         else:
-            url = "http://{0}:{1}/api/saved_objects/index-pattern/{3}" \
+            url = "http://{0}:{1}/api/saved_objects/index-pattern" \
                 .format(self.hostname, self.port)
 
         payload = {"attributes": {"title":  index_pattern, "timeFieldName": "timestamp"}}

@@ -1,6 +1,7 @@
 # Copyright (C) 2020 VMware, Inc.  All rights reserved.
 
 from elk.parsers.custom_parser import CustomParser
+import datetime
 
 # Key is the string to look for in the log file
 # Kibana label for this event
@@ -29,9 +30,12 @@ class CcpParser(CustomParser):
 
     def finish(self):
         res = {}
+        print("called")
+        print(self.events_not_found)
         for event, label in self.events_not_found.items():
             res['event'] = label
             res['status'] = "FAIL"
+            res['timestamp'] = datetime.datetime.utcnow()
         return res
 
 
