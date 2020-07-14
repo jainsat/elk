@@ -6,8 +6,14 @@ Options:
   -d DEST_DIR, --dest_dir=DEST_DIR
                         Directory where support bundle should be extracted.
   -l LOG, --log=LOG     Path to log
-
+  -b BUG, --bug_id=BUG Bug id
+  -c, --clear-old       Clear the old data
+  -n HOST, --host=HOST  ELK hostname or ip address
+  -k KIBANA_PORT, --kibana_port=KIBANA_PORT
+                        Kibana port
+  -e ES_PORT, --es_port=ES_PORT
+                        Elasticsearch port
 
 
 Sample command:
-$ python main.py --log <log_path> --dest_dir <dest_dir> --verbose
+$ main.py --log <log_path> --dest_dir <dest_dir> --host 10.39.1.211 --bug_id 12345 --verbose

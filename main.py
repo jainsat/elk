@@ -173,4 +173,6 @@ if __name__ == "__main__":
         print("You can access Kibana at http://{0}:{1}/s/{2}".
               format(options.host, options.kibana_port, options.space.lower()))
 
-
+    else:
+        print ("No bug id provided. Exiting.")
+        exit(0)
