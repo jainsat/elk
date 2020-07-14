@@ -15,5 +15,10 @@ Options:
                         Elasticsearch port
 
 
+
+How to run?
+Set and environment variable ELK_REPO to the root directory of this repo.
+export ELK_REPO="/path/to/first-responder"
+
 Sample command:
 $ main.py --log <log_path> --dest_dir <dest_dir> --host 10.39.1.211 --bug_id 12345 --verbose
