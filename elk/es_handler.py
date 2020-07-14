@@ -32,11 +32,11 @@ class NoAttributeFoundException(Exception):
                                                             self.config)
 
 
-class ES:
+class EsHandler:
     def __init__(self, host, port, index_name):
         self.host = host
         self.port = port
-        self.es = Elasticsearch(['http://localhost:9200'])
+        self.es = Elasticsearch(['http://{0}:{1}'.format(self.host, self.port)])
         self.index = index_name
         self.root_dir = os.getenv("ELK_REPO")
 

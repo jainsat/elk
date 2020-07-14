@@ -7,7 +7,7 @@ from string import Template
 import os
 
 
-class KibanaApi:
+class KibanaHandler:
     def __init__(self, host, port):
         self.hostname = host
         self.port = port

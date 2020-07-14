@@ -11,8 +11,8 @@ from utils import Utils
 from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
 from tn_summarizer import TnSummarizer
 from mgr_summarizer import MgrSummarizer
-from elk.kibana_utils import KibanaApi
-from elk.es import ES
+from elk.kibana_handler import KibanaHandler
+from elk.es_handler import EsHandler
 import pprint
 
 ip_to_data = {}
@@ -111,19 +111,20 @@ if __name__ == "__main__":
 
     logging.debug(options)
     if options.space:
-        # Get instance of Kibana api.
-        kibana_api = KibanaApi(options.host, options.kibana_port)
+        # Get instance of Kibana Handler.
+        kibana_handler = KibanaHandler(options.host, options.kibana_port)
 
-        # Get instance of ElasticSearch api.
-        es_ins = ES(options.host, options.es_port, "test-index-" + options.space.lower())
+        # Get instance of ElasticSearch Handler.
+        es_handler = EsHandler(options.host, options.es_port, "test-index-" +
+                           options.space.lower())
 
         if options.clear:
             # Delete old space and index related to this space.
-            kibana_api.delete_space(options.space.lower())
-            es_ins.delete_index()
+            kibana_handler.delete_space(options.space.lower())
+            es_handler.delete_index()
 
         # Create fresh space
-        created = kibana_api.create_space(options.space)
+        created = kibana_handler.create_space(options.space)
         if not created:
             print("Kibana space for this bug id already exist. "
                   "It can be accessed at http://{0}:{1}/s/{2}".
@@ -134,7 +135,7 @@ if __name__ == "__main__":
             exit(0)
 
         # Create index pattern
-        index_id = kibana_api.create_index_pattern("test-index-" +
+        index_id = kibana_handler.create_index_pattern("test-index-" +
                                                    options.space.lower() +
                                                    "*", options.space)
 
@@ -153,21 +154,21 @@ if __name__ == "__main__":
         summary = get_summary()
 
         # Create a markdown UI for summary.
-        summary_id = kibana_api.create_markdown("Summary", summary, options.space)
+        summary_id = kibana_handler.create_markdown("Summary", summary, options.space)
         logging.debug("summary id = " + summary_id)
 
         # Insert all the data
-        es_ins.insert(ip_to_data)
+        es_handler.insert(ip_to_data)
 
         # Create a search UI for Events
-        search_id = kibana_api.create_search("Events", index_id, options.space)
+        search_id = kibana_handler.create_search("Events", index_id, options.space)
         logging.debug("search id = " + search_id)
 
-        kibana_api.add_to_dashboard("visualization", summary_id, 23, options.space)
+        kibana_handler.add_to_dashboard("visualization", summary_id, 23, options.space)
 
-        kibana_api.add_to_dashboard("search", search_id, 23, options.space)
+        kibana_handler.add_to_dashboard("search", search_id, 23, options.space)
 
-        kibana_api.create_dashboard(options.space)
+        kibana_handler.create_dashboard(options.space)
 
         print("You can access Kibana at http://{0}:{1}/s/{2}".
               format(options.host, options.kibana_port, options.space.lower()))
