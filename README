@@ -16,7 +16,7 @@ Options:
 
 
 
-How to run?
+How to run? 
 Set and environment variable ELK_REPO to the root directory of this repo.
 export ELK_REPO="/path/to/first-responder"
 
