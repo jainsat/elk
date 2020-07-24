@@ -3,10 +3,10 @@
 import os
 import sys
 import logging
-from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, KVM_UBU, \
+from constants import MGR_NETSTAT_PATH, CCP_LISTENING, MGR, ESX, EDGE, \
     KVM_UBU_NETSTAT_PATH, PROXY_CCP_CONN, APH_MPA_CONN, ESX_NETSTAT_PATH, \
-    EDGE_NETSTAT_PATH, GLOB_MGR, IP_ADDR, TN
-from log_parser import LogParser
+    EDGE_NETSTAT_PATH, GLOB_MGR, IP_ADDR, TN,  KVM_UBU
+from summary.log_parser import LogParser
 
 file_map = {ESX: ESX_NETSTAT_PATH,
             EDGE: EDGE_NETSTAT_PATH,

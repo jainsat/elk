@@ -5,12 +5,11 @@ import os
 import sys
 import logging
 from optparse import OptionParser
-from ccp_parser import CcpParser
-from tn_log_parser import TnParser
+from summary.parser_pipeline import ParserPipeline
 from utils import Utils
-from constants import MGR, EDGE, KVM_UBU, ESX, UNKNOWN, GLOB_MGR
-from tn_summarizer import TnSummarizer
-from mgr_summarizer import MgrSummarizer
+from constants import MGR, UNKNOWN, GLOB_MGR
+from summary.tn_summarizer import TnSummarizer
+from summary.mgr_summarizer import MgrSummarizer
 from elk.kibana_handler import KibanaHandler
 from elk.es_handler import EsHandler
 import pprint
@@ -24,22 +23,12 @@ def is_root(dir_name):
     return False
 
 
-def get_parser(type, root_dir):
-    if type == MGR or type == GLOB_MGR:
-        return CcpParser(root_dir, ip_to_data, type)
-    elif type == ESX or type == EDGE or type == KVM_UBU:
-        return TnParser(root_dir, ip_to_data, type)
-    else:
-        logging.debug("No parser of type {0} found".format(type))
-        return UNKNOWN
-
-
 def handle_dir(dir, dest_dir, type=UNKNOWN):
     new_type = Utils.get_log_type(dir)
     if new_type:
         type = new_type
     if type != UNKNOWN and is_root(dir):
-        get_parser(type, dir).process()
+        return ParserPipeline(dir, ip_to_data, type).process()
     else:
         zipped_files = [os.path.join(dir, f) for f in os.listdir(dir) if
               Utils.is_tar_gzipped(f)]

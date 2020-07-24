@@ -3,7 +3,7 @@
 import os
 import logging
 from constants import VNVP_CERT_FILE_PATH, CERTIFICATE
-from log_parser import LogParser
+from summary.log_parser import LogParser
 
 
 class CertificateParser(LogParser):

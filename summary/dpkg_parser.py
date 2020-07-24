@@ -3,9 +3,9 @@
 import logging
 import os
 import sys
-from log_parser import LogParser
-from constants import DPKG_EDGE_PATH, DPKG_KVM_UBU_PATH, PROXY_VERSION, EDGE, \
-    KVM_UBU
+from summary.log_parser import LogParser
+from constants import DPKG_EDGE_PATH, DPKG_KVM_UBU_PATH, PROXY_VERSION, \
+    EDGE, KVM_UBU
 
 file_map = {EDGE: DPKG_EDGE_PATH,
             KVM_UBU: DPKG_KVM_UBU_PATH}

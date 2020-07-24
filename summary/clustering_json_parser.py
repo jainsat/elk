@@ -4,7 +4,7 @@ import os
 import logging
 import json
 from constants import CLUSTER_JSON_PATH, IP_ADDR, UUID, MGR
-from log_parser import LogParser
+from summary.log_parser import LogParser
 
 
 class ClusteringJsonParser(LogParser):

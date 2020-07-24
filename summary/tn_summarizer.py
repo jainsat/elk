@@ -2,7 +2,7 @@
 
 import constants
 import os
-from summarizer import Summarizer
+from summary.summarizer import Summarizer
 
 
 class TnSummarizer(Summarizer):
@@ -18,12 +18,13 @@ class TnSummarizer(Summarizer):
 
         summary = ""
         # basic
-        with open(os.path.join(self.root_dir, "templates/basic")) as f:
+        with open(os.path.join(self.root_dir, "summary/templates/basic")) as f:
             summary = f.read().format(node_type, val.get(constants.SUPPORT_BUNDLE))
 
         # controller-info
         if val.get(constants.CONTROLLERS):
-            with open(os.path.join(self.root_dir, "templates/controller_info")) as f:
+            with open(os.path.join(self.root_dir,
+                                   "summary/templates/controller_info")) as f:
                 match = [None] * 3
                 for i, controller in enumerate(val[constants.CONTROLLERS]):
                     ip = controller.ip
@@ -55,13 +56,15 @@ class TnSummarizer(Summarizer):
                                       val.get(constants.MAINTENANCE_MODE))
 
         # netstat
-        with open(os.path.join(self.root_dir, "templates/netstat_tn_summary")) as f:
+        with open(os.path.join(self.root_dir,
+                               "summary/templates/netstat_tn_summary")) as f:
             summary += f.read().format(val.get(constants.IP_ADDR),
                                   val.get(constants.PROXY_CCP_CONN),
                                   val.get(constants.APH_MPA_CONN))
 
         # Proxy version
-        with open(os.path.join(self.root_dir, "templates/proxy_version")) as f:
+        with open(os.path.join(self.root_dir,
+                               "summary/templates/proxy_version")) as f:
             summary += f.read().format(val.get(constants.PROXY_VERSION))
 
         summary += " #" + "\n\n"

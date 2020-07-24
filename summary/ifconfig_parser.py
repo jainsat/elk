@@ -4,7 +4,7 @@ import os
 import re
 import logging
 from constants import IFCONFIG_PATH, IP_ADDR
-from log_parser import LogParser
+from summary.log_parser import LogParser
 
 
 class IfConfigParser(LogParser):

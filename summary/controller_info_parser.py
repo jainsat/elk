@@ -3,9 +3,10 @@
 import os
 import logging
 import xml.etree.ElementTree as ET
-from log_parser import LogParser
+from summary.log_parser import LogParser
 from constants import CONTROLLER_INFO_PATH, MAINTENANCE_MODE, UUID, \
     CONTROLLERS
+
 
 class Controller:
     def __init__(self, ip, version, uuid, certificate):
