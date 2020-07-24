@@ -109,7 +109,7 @@ class EsHandler:
                     if custom_parser:
                         kvs = custom_parser.pre()
                         if kvs is not None and len(kvs) > 0:
-                            self.add_basic_fields(node_ip, node_type, node_uuid,
+                            self.add_basic_fields(node_ip, node_uuid, node_type,
                                                   res)
                             self.es.index(index=self.index, body=kvs)
                     for line in f:
@@ -120,7 +120,7 @@ class EsHandler:
 
                         # Add some basic info
                         if res is not None:
-                            self.add_basic_fields(node_ip, node_type, node_uuid,
+                            self.add_basic_fields(node_ip, node_uuid, node_type,
                                                   res)
                             res["file"] = file
                             res["line"] = line
@@ -142,7 +142,7 @@ class EsHandler:
                     if custom_parser:
                         kvs = custom_parser.post()
                         if kvs is not None and len(kvs) > 0:
-                            self.add_basic_fields(node_ip, node_type, node_uuid,
+                            self.add_basic_fields(node_ip, node_uuid, node_type,
                                                   res)
                             self.es.index(index=self.index, body=kvs)
 
@@ -150,7 +150,7 @@ class EsHandler:
                     kvs = custom_parser.finish()
                     if kvs is not None and len(kvs) > 0:
                         print("inside")
-                        self.add_basic_fields(node_ip, node_type, node_uuid,
+                        self.add_basic_fields(node_ip, node_uuid, node_type,
                                               kvs)
                         self.es.index(index=self.index, body=kvs)
 
