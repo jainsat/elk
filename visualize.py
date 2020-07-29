@@ -65,7 +65,8 @@ class Visualize:
         if not barrier and not runtime:
             # Create a markdown UI.
             id = self.kibana_handler.create_markdown("Realization Dump Summary",
-                                                     "All okay!!", self.space)
+                                                     "#### All okay!!",
+                                                     self.space)
             self.kibana_handler.add_to_dashboard("visualization",
                                                  id,
                                                  5,
