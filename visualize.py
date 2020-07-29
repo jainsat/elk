@@ -20,42 +20,41 @@ class Visualize:
         summary_id = self.kibana_handler.create_markdown("Summary", summary,
                                                          self.space)
         logging.debug("summary id = " + summary_id)
-        return summary_id
+        self.kibana_handler.add_to_dashboard("visualization", summary_id, 23,
+                                             space_name=self.space)
 
     def __create_events_ui(self):
         # Create a search UI for Events
+        columns = ["entity", "ip_address", "event", "status"]
         search_id = self.kibana_handler.create_search("Events", self.index_id,
+                                                      columns, "event: *",
                                                       self.space)
-        logging.debug("search id = " + search_id)
+        logging.debug("events search id = " + search_id)
+        self.kibana_handler.add_to_dashboard("search", search_id, 23,
+                                             space_name=self.space)
+
+    def __create_barrier_realization_ui(self):
+
+        columns = ["uuid", "tn_uuid", "vertical", "expected_barrier",
+                   "processed_barrier"]
+        search_id = self.kibana_handler.create_search("Realization Barrier Status",
+                                                      self.index_id,
+                                                      columns,
+                                                      "expected_barrier: *",
+                                                      self.space)
+        logging.debug("barrier search id = " + search_id)
         return search_id
 
-    def __create_realization_barrier_status_body(self, response):
-        headers = ["ccp uuid", "tn uuid", "vertical", "expected barrier",
-                   "processed barrier"]
-        rows = []
-        for entry in response:
-            row = []
-            source = entry.get("_source")
-            row.append(source.get("uuid"))
-            row.append(source.get("tn_uuid"))
-            row.append(source.get("vertical"))
-            row.append(source.get("expected_barrier"))
-            row.append(source.get("processed_barrier"))
-            rows.append(row)
-        return self.kibana_handler.create_markdown_table(headers, rows)
+    def __create_runtime_realization_ui(self):
 
-    def __create_realization_runtime_status_body(self, response):
-        headers = ["ccp uuid", "tn uuid", "component", "err_msg"]
-        rows = []
-        for entry in response:
-            row = []
-            source = entry.get("_source")
-            row.append(source.get("uuid"))
-            row.append(source.get("tn_uuid"))
-            row.append(source.get("component"))
-            row.append(source.get("err_msg"))
-            rows.append(row)
-        return self.kibana_handler.create_markdown_table(headers, rows)
+        columns = ["uuid", "tn_uuid", "component", "err_msg"]
+        search_id = self.kibana_handler.create_search("Realization Runtime Status",
+                                                      self.index_id,
+                                                      columns,
+                                                      "component: *",
+                                                      self.space)
+        logging.debug("runtime search id = " + search_id)
+        return search_id
 
     def __create_realization_ui(self):
 
@@ -63,44 +62,35 @@ class Visualize:
         barrier = self.es_handler.query("processed_barrier: *")
         runtime = self.es_handler.query("component: *")
 
+        if not barrier and not runtime:
+            # Create a markdown UI.
+            id = self.kibana_handler.create_markdown("Realization Dump Summary",
+                                                     "All okay!!", self.space)
+            self.kibana_handler.add_to_dashboard("visualization",
+                                                 id,
+                                                 5,
+                                                 space_name=self.space,
+                                                 width=23)
+            return
+
         if barrier:
-            barrier_body = self.__create_realization_barrier_status_body(barrier)
+            barrier_id = self.__create_barrier_realization_ui()
+            self.kibana_handler.add_to_dashboard("search",
+                                                 barrier_id,
+                                                 23,
+                                                 space_name=self.space)
 
         if runtime:
-            runtime_body = self.__create_realization_runtime_status_body(runtime)
-
-        if barrier or runtime:
-            final_body = self.__create_realization_ui_body(barrier_body,
-                                                           runtime_body)
-            height = 14 # height of UI PAN
-            width = 46
-        else:
-            final_body = "## All Okay!!"
-            height = 5
-            width = 23
-
-        # Create a markdown UI for table.
-        table_id = self.kibana_handler.create_markdown("Realization Dump Summary",
-                                                       final_body, self.space)
-        logging.debug("table id = " + table_id)
-        return table_id, height, width
+            runtime_id = self.__create_runtime_realization_ui()
+            self.kibana_handler.add_to_dashboard("search",
+                                                 runtime_id,
+                                                 23,
+                                                 space_name=self.space)
 
     def visualize(self):
-        summary_id = self.__create_summary()
-        events_id = self.__create_events_ui()
-        realization_id, realization_ui_height, width = \
-            self.__create_realization_ui()
-
-        self.kibana_handler.add_to_dashboard("visualization", summary_id, 23,
-                                             space_name=self.space)
-
-        self.kibana_handler.add_to_dashboard("search", events_id, 23,
-                                             space_name=self.space)
-
-        self.kibana_handler.add_to_dashboard("visualization", realization_id,
-                                             realization_ui_height,
-                                             space_name=self.space, width=width)
-
+        self.__create_summary()
+        self.__create_events_ui()
+        self.__create_realization_ui()
         self.kibana_handler.create_dashboard(self.space)
 
     @staticmethod

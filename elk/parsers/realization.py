@@ -17,6 +17,8 @@ class RealizationDumpParser(CustomParser):
 
         # UUID to barrier map.
         self.expected_barrier_map = {}
+        self.tn_to_record = {}
+        self.tn_to_dump ={}
 
     def __set_section(self, num):
         self.section = num
@@ -45,13 +47,18 @@ class RealizationDumpParser(CustomParser):
                 vertical = line.split()[1].strip()
                 processed_barrier = line.split()[2].strip()
                 expected_barrier = self.expected_barrier_map.get(uuid)
-                if processed_barrier != expected_barrier:
-                    res['tn_uuid'] = uuid
-                    res['expected_barrier'] = expected_barrier
-                    res['processed_barrier'] = processed_barrier
-                    res['vertical'] = vertical
-                    res['tag'] = 'realization'
-                    return res
+                res['tn_uuid'] = uuid
+                res['expected_barrier'] = expected_barrier
+                res['processed_barrier'] = processed_barrier
+                res['vertical'] = vertical
+                res['tag'] = 'realization'
+                tn_records = self.tn_to_record.get(uuid, [])
+                tn_records.append(res)
+                self.tn_to_record[uuid] = tn_records
+                if processed_barrier != expected_barrier or self.tn_to_dump.get(uuid):
+                    self.tn_to_record.pop(uuid)
+                    self.tn_to_dump[uuid] = True
+                    return tn_records
 
         if self.section == RUNTIME_STATUS_SECTION:
             match = UUID_RE.search(line)

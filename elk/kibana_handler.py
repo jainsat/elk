@@ -15,7 +15,6 @@ class KibanaHandler:
         self.x = 0
         self.y = 0
         self.root_dir = os.getenv("ELK_REPO")
-        self.root_dir = "/Users/satya/vmware/first-responder"
         with open(os.path.join(self.root_dir, "elk/resources/dashboard.json")) as f:
             self.dashboard_json = json.load(f)
 
@@ -194,12 +193,12 @@ class KibanaHandler:
 
         return text
 
-
-    def create_search(self, title, index, space_name=None):
+    def create_search(self, title, index, columns, query, space_name=None):
         with open(os.path.join(self.root_dir, 'elk/resources/event_search.json')) as f:
             t = Template(f.read())
-            payload = t.substitute(TITLE=title, INDEX= index)
-
+            payload = t.substitute(TITLE=title, INDEX= index, COLUMNS=columns,
+                                   QUERY=query)
+            payload = payload.replace("'", '"')
         return self.create_ui(payload, "search", space_name)
 
     def add_to_dashboard(self, type, id, height, space_name=None, width=None):

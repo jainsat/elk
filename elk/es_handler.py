@@ -1,6 +1,7 @@
 # Copyright (C) 2020 VMware, Inc.  All rights reserved.
 
 from elasticsearch import Elasticsearch
+from elasticsearch import helpers
 from constants import MGR, SUPPORT_BUNDLE, UUID, ESX
 from datetime import datetime, timezone
 from string import Template
@@ -141,8 +142,13 @@ class EsHandler:
 
                         if custom_parser:
                             r = custom_parser.process(line, res)
-                            if r:
+                            if r is not None and type(r) is dict:
                                 self.es.index(index=self.index, body=r)
+                            elif r is not None:
+                                for record in r:
+                                    record["_index"] = self.index
+                                helpers.bulk(self.es, r)
+
 
                     f.close()
                     if custom_parser:
@@ -190,6 +196,8 @@ class EsHandler:
                 ts = datetime.strptime(m.group("timestamp"),
                                        "%Y-%m-%dT%H:%M:%SZ")
             return ts.replace(tzinfo=timezone.utc)
+        else:
+            return datetime.utcnow()
 
     @staticmethod
     def find_files(dir, patterns):

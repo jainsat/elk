@@ -3,12 +3,7 @@
     "title": "$TITLE",
     "description": "",
     "hits": 0,
-    "columns": [
-      "entity",
-      "ip_address",
-      "event",
-      "status"
-    ],
+    "columns": $COLUMNS,
     "sort": [
       [
         "timestamp",
@@ -17,7 +12,7 @@
     ],
     "version": 1,
     "kibanaSavedObjectMeta": {
-      "searchSourceJSON": "{\"highlightAll\":true,\"version\":true,\"query\":{\"language\":\"kuery\",\"query\":\"event: * \"},\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"filter\":[]}"
+      "searchSourceJSON": "{\"highlightAll\":true,\"version\":true,\"query\":{\"language\":\"kuery\",\"query\":\"$QUERY \"},\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"filter\":[]}"
     }
   },
   "references": [
