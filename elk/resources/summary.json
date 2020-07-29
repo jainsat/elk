@@ -1,0 +1,16 @@
+{
+  "attributes": {
+    "title": "$TITLE",
+    "visState": "{\"type\":\"markdown\",\"aggs\":[],\"params\":{\"fontSize\":11,\"openLinksInNewTab\":false,\"markdown\":\"$TEXT\"},\"title\": \"$TITLE\"}",
+    "uiStateJSON": "{}",
+    "description": "",
+    "version": 1,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
+    }
+  },
+  "references": [],
+  "migrationVersion": {
+    "visualization": "7.8.0"
+  }
+}

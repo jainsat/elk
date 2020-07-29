@@ -7,11 +7,10 @@ import logging
 from optparse import OptionParser
 from summary.parser_pipeline import ParserPipeline
 from utils import Utils
-from constants import MGR, UNKNOWN, GLOB_MGR
-from summary.tn_summarizer import TnSummarizer
-from summary.mgr_summarizer import MgrSummarizer
+from constants import UNKNOWN
 from elk.kibana_handler import KibanaHandler
 from elk.es_handler import EsHandler
+from visualize import Visualize
 import pprint
 
 ip_to_data = {}
@@ -57,19 +56,6 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
         elif os.path.isdir(os.path.join(dest_dir, file)):
             new_dir = os.path.join(dest_dir, file)
             handle_dir(new_dir, new_dir, type)
-
-
-def get_summary():
-    summary = ""
-    for k, v in ip_to_data.items():
-        arr = k.split("#")
-        node_type = arr[0]
-        if node_type == MGR or node_type == GLOB_MGR:
-            summary += MgrSummarizer(ip_to_data, k).summarize()
-        else:
-            summary += TnSummarizer(ip_to_data, k).summarize()
-    return summary
-
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -139,25 +125,13 @@ if __name__ == "__main__":
                 exit(1)
 
         pprint.pprint(ip_to_data)
-        # Get summary of logs
-        summary = get_summary()
-
-        # Create a markdown UI for summary.
-        summary_id = kibana_handler.create_markdown("Summary", summary, options.space)
-        logging.debug("summary id = " + summary_id)
 
         # Insert all the data
         es_handler.insert(ip_to_data)
 
-        # Create a search UI for Events
-        search_id = kibana_handler.create_search("Events", index_id, options.space)
-        logging.debug("search id = " + search_id)
-
-        kibana_handler.add_to_dashboard("visualization", summary_id, 23, options.space)
-
-        kibana_handler.add_to_dashboard("search", search_id, 23, options.space)
-
-        kibana_handler.create_dashboard(options.space)
+        # Create all the visualizations.
+        Visualize(es_handler, kibana_handler, options.space,
+                  index_id, ip_to_data).visualize()
 
         print("You can access Kibana at http://{0}:{1}/s/{2}".
               format(options.host, options.kibana_port, options.space.lower()))

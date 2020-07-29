@@ -32,5 +32,3 @@ class IfConfigParser(LogParser):
                     self.res[IP_ADDR] = ip_addr
                     break
                 line = f.readline()
-
-

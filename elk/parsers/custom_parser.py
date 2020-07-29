@@ -30,7 +30,9 @@ class CustomParser:
     This is called for every line. It should add key value pairs in the
     dictionary @res which is passed as a parameter. This dictionary will
     have some basic key-value pairs available like ip_address, uuid, filename,
-    timestamp associated with the line etc.
+    timestamp associated with the line etc. This method can return a
+    dictionary or a list of dictionary. It can also choose to return nothing if
+    no relevant data was found in the line.
     '''
     def process(self, line, res):
         pass

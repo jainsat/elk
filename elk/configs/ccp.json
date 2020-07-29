@@ -1,11 +1,19 @@
 {
-"logs" :[
-  {
-    "logDir": "var/log/cloudnet",
-    "logFiles": ["nsx-ccp-[0-9]{8}-[0-9]{9}.log.gz", "nsx-ccp.log"],
-    "customParser": "ccp_parser.CcpParser"
-  }
-]
+  "logs": [
+    {
+      "logDir": "var/log/cloudnet",
+      "logFiles": [
+        "^nsx-ccp-[0-9]{8}-[0-9]{9}.log.gz$",
+        "^nsx-ccp.log$"
+      ],
+      "customParser": "ccp_parser.CcpParser"
+    },
+    {
+      "logDir": "controller/data",
+      "logFiles": [
+        "^realization_status_dump$"
+      ],
+      "customParser": "realization.RealizationDumpParser"
+    }
+  ]
 }
-
-

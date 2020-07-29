@@ -15,7 +15,8 @@ class KibanaHandler:
         self.x = 0
         self.y = 0
         self.root_dir = os.getenv("ELK_REPO")
-        with open(os.path.join(self.root_dir, "elk/kibana_resources/dashboard.json")) as f:
+        self.root_dir = "/Users/satya/vmware/first-responder"
+        with open(os.path.join(self.root_dir, "elk/resources/dashboard.json")) as f:
             self.dashboard_json = json.load(f)
 
     '''
@@ -172,26 +173,48 @@ class KibanaHandler:
 
     def create_markdown(self, title, text, space_name=None):
         text = text.replace('\n', '\\\\n')
-        with open(os.path.join(self.root_dir, 'elk/kibana_resources/summary.json')) as f:
+        with open(os.path.join(self.root_dir, 'elk/resources/summary.json')) as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, TEXT=text)
 
         return self.create_ui(payload, "visualization", space_name)
 
+    @staticmethod
+    def create_markdown_table(headers, rows):
+        text = "|".join(headers) + "\n"
+
+        # This is markdown syntax for defining alignment of column values
+        text += "|".join([':-'] * len(headers))
+
+        text += "\n"
+
+        for row in rows:
+            text += "|".join(row)
+            text += "\n"
+
+        return text
+
+
     def create_search(self, title, index, space_name=None):
-        with open(os.path.join(self.root_dir, 'elk/kibana_resources/event_search.json')) as f:
+        with open(os.path.join(self.root_dir, 'elk/resources/event_search.json')) as f:
             t = Template(f.read())
             payload = t.substitute(TITLE=title, INDEX= index)
 
         return self.create_ui(payload, "search", space_name)
 
-    def add_to_dashboard(self, type, id, height, space_name):
+    def add_to_dashboard(self, type, id, height, space_name=None, width=None):
 
         panels_json = self.dashboard_json.get("attributes").get("panelsJSON")
-        with open(os.path.join(self.root_dir, "elk/kibana_resources/panel_format")) as p:
+        with open(os.path.join(self.root_dir, "elk/resources/panel_format.json")) as p:
             panel_format = Template(p.read())
+            if width is None:
+                width = 23
+            if self.x + width > 46:
+                self.x = 0
+                self.y += 1
             panel_str = panel_format.substitute(X=self.x, Y=self.y,
-                                                i=self.vis_count, H=height)
+                                                i=self.vis_count, H=height,
+                                                W=width)
             panels_json = panels_json[:-1]
             if self.vis_count > 0:
                 panels_json += ", "
@@ -200,11 +223,13 @@ class KibanaHandler:
             dic = {"name": "panel_" + str(self.vis_count), "type": type,
                    "id": id}
             self.dashboard_json.get("references").append(dic)
-            if self.vis_count % 2 == 0:
-                self.x = self.x + 23
+            if self.x + width >= 46:
+                self.x = 0
+                self.y += 1
 
             else:
-                self.x = 0
+                self.x += width
+
             self.vis_count += 1
             logging.debug(json.dumps(self.dashboard_json))
 
@@ -218,7 +243,10 @@ class KibanaHandler:
 
 
 
-
+# headers = ["Name", "Lunch order", "Spicy", "Owes"]
+# rows = [["John", "sandwich", "medium", "$11"],["John", "sandwichdjkfjdkjfkdjfkdjf", "medium", "$11"],["John", "sandwich", "medium", "$11"],["John", "sandwich", "medium", "$11"] ]
+# text=KibanaHandler("10.39.1.211", "5601").create_markdown_table(headers, rows)
+# print(text)
 #KibanaApi().create_search("Events", "3e4305c0-c147-11ea-9597-513cce2a8d77", "Rose")
 
 

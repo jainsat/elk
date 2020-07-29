@@ -3,6 +3,7 @@
 from elasticsearch import Elasticsearch
 from constants import MGR, SUPPORT_BUNDLE, UUID, ESX
 from datetime import datetime, timezone
+from string import Template
 import json
 import re
 import os
@@ -10,7 +11,9 @@ import gzip
 import requests
 import logging
 
-TIMESTAMP_REGEX = "(?P<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.{0,1}[0-9]{0,3}Z).*"
+
+TIMESTAMP_REGEX = "(?P<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:" \
+                  "[0-9]{2}.{0,1}[0-9]{0,3}Z).*"
 
 '''
 Type to config mapping. Value represents the file name present in config
@@ -39,6 +42,8 @@ class EsHandler:
         self.es = Elasticsearch(['http://{0}:{1}'.format(self.host, self.port)])
         self.index = index_name
         self.root_dir = os.getenv("ELK_REPO")
+        if self.root_dir is None:
+            raise Exception("Please set the env variable ELK_REPO")
 
     def delete_index(self):
         url = "http://{0}:{1}/{2}".format(self.host, self.port, self.index)
@@ -135,8 +140,9 @@ class EsHandler:
                                 self.es.index(index=self.index, body=res)
 
                         if custom_parser:
-                            if custom_parser.process(line, res):
-                                self.es.index(index=self.index, body=res)
+                            r = custom_parser.process(line, res)
+                            if r:
+                                self.es.index(index=self.index, body=r)
 
                     f.close()
                     if custom_parser:
@@ -149,7 +155,6 @@ class EsHandler:
                 if custom_parser:
                     kvs = custom_parser.finish()
                     if kvs is not None and len(kvs) > 0:
-                        print("inside")
                         self.add_basic_fields(node_ip, node_uuid, node_type,
                                               kvs)
                         self.es.index(index=self.index, body=kvs)
@@ -211,5 +216,23 @@ class EsHandler:
         for pattern in patterns:
             m = re.search(pattern, line)
             if m is not None:
-                print(m.groupdict())
                 return m.groupdict()
+
+    def query(self, query, cols=None):
+        with open(os.path.join(self.root_dir, "elk/resources/es_query.json")) as q:
+            query_json = Template(q.read())
+            if cols is None:
+                payload = query_json.substitute(COLUMNS="*", QUERY=query)
+            else:
+                payload = query_json.substitute(COLUMNS=",".join(cols), QUERY=query)
+        url = "http://{0}:{1}/{2}/_search".format(self.host, self.port,
+                                                  self.index)
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.post(url, data=payload, headers=headers)
+        if response.status_code == 200:
+            return response.json().get("hits").get("hits")
+        else:
+            logging.debug(response.json())
+

@@ -1,0 +1,14 @@
+{
+  "_source": [
+    "$COLUMNS"
+  ],
+  "query": {
+    "bool": {
+      "must": {
+        "query_string": {
+          "query": "$QUERY"
+        }
+      }
+    }
+  }
+}

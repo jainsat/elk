@@ -20,7 +20,7 @@ class NetStatParser(LogParser):
         self.file = None
         self.type = None
         self.res = None
-    
+
     def init(self, root_dir, res, type=None):
         self.res = res
         self.type = type

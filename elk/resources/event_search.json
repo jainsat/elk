@@ -1,0 +1,33 @@
+{
+  "attributes": {
+    "title": "$TITLE",
+    "description": "",
+    "hits": 0,
+    "columns": [
+      "entity",
+      "ip_address",
+      "event",
+      "status"
+    ],
+    "sort": [
+      [
+        "timestamp",
+        "asc"
+      ]
+    ],
+    "version": 1,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": "{\"highlightAll\":true,\"version\":true,\"query\":{\"language\":\"kuery\",\"query\":\"event: * \"},\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"filter\":[]}"
+    }
+  },
+  "references": [
+    {
+      "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+      "type": "index-pattern",
+      "id": "$INDEX"
+    }
+  ],
+  "migrationVersion": {
+    "search": "7.4.0"
+  }
+}
