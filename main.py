@@ -124,7 +124,7 @@ if __name__ == "__main__":
                       " a directory".format(options.log))
                 exit(1)
 
-        pprint.pprint(ip_to_data)
+        # pprint.pprint(ip_to_data)
 
         # Insert all the data
         es_handler.insert(ip_to_data)

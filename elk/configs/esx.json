@@ -5,9 +5,8 @@
       "logFiles": [
         "nsx-syslog.log"
       ],
-      "patternFiles": [
-        "nsx_proxy_handshake.patterns"
-      ]
+      "customParser": "nsx_syslog_parser.NsxSyslogParser"
+
     }
   ]
 }

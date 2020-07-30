@@ -50,14 +50,14 @@ class CcpParser(CustomParser):
             if not self.first_event_found:
                 self.first_event_found = True
             res['event'] = labels[self.expected_event_num]
-            res['status'] = "PASS"
+            res['log_level'] = "INFO"
             self.last_event_timestamp = res["timestamp"]
             self.expected_event_num = (self.expected_event_num + 1) % TOTAL_EVENTS
             return res
 
         if line.find("Cluster is down") >= 0:
-            res["status"] = "FAIL"
-            res["event"] = events[4]
+            res["log_level"] = "WARN"
+            res["event"] = "Cluster is down"
             self.expected_event_num = 4
             return res
 
@@ -73,7 +73,7 @@ class CcpParser(CustomParser):
         records = []
         i = self.expected_event_num
         while i != match_found:
-            record = {"status": "FAIL", "event": events[i]}
+            record = {"log_level": "NOT_FOUND", "event": events[i]}
             self.last_event_timestamp += timedelta(seconds=1)
             record["timestamp"] = self.last_event_timestamp
             records.append(record)

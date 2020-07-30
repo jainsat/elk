@@ -25,7 +25,7 @@ class Visualize:
 
     def __create_events_ui(self):
         # Create a search UI for Events
-        columns = ["entity", "ip_address", "event", "status"]
+        columns = ["entity", "ip_address", "event", "log_level"]
         search_id = self.kibana_handler.create_search("Events", self.index_id,
                                                       columns, "event: *",
                                                       self.space)
