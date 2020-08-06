@@ -1,6 +1,6 @@
 {
   "attributes": {
-    "title": "Test",
+    "title": "CCP Dashboard",
     "hits": 0,
     "description": "",
     "panelsJSON": "[]",
@@ -11,8 +11,5 @@
       "searchSourceJSON": "{\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"filter\":[]}"
     }
   },
-  "references": [],
-  "migrationVersion": {
-    "dashboard": "7.3.0"
-  }
+  "references": []
 }

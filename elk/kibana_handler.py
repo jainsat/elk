@@ -15,6 +15,8 @@ class KibanaHandler:
         self.x = 0
         self.y = 0
         self.root_dir = os.getenv("ELK_REPO")
+        if self.root_dir is None:
+            raise Exception("Please set ELK_REPO env variable.")
         with open(os.path.join(self.root_dir, "elk/resources/dashboard.json")) as f:
             self.dashboard_json = json.load(f)
 
@@ -43,17 +45,95 @@ class KibanaHandler:
 
         return True
 
-    def find_index_id(self, index_name, space_name=None):
+    def export_dashboard(self, dashboard_id, space_name =None):
+        space_name = space_name.lower()
+        if space_name:
+            url = "http://{0}:{1}/s/{2}/api/kibana/dashboards/export?" \
+                  "dashboard={3}".format(self.hostname,
+                                         self.port,
+                                         space_name,
+                                         dashboard_id)
+        else:
+            url = "http://{0}:{1}/api/kibana/dashboards/export?" \
+                  "dashboard={2}".format(self.hostname,
+                                         self.port,
+                                         dashboard_id)
+
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200 and response.json()["objects"][0].get("error") is None:
+            return response.json()
+
+        else:
+            print(response.text.encode('utf8'))
+            raise Exception("Can't export dashboard.")
+
+    def import_dashboard(self, payload, space_name=None):
+        space_name = space_name.lower()
+        if space_name:
+            url = "http://{0}:{1}/s/{2}/api/kibana/dashboards/import?exclude=" \
+                  "index-pattern".format(self.hostname,
+                                         self.port,
+                                         space_name)
+        else:
+            url = "http://{0}:{1}/api/kibana/dashboards/import?" \
+                  "exclude=index-pattern".format(self.hostname,
+                                                 self.port)
+
+        headers = {
+            'kbn-xsrf': 'reporting',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post(url, headers=headers, data=payload)
+
+        if response.status_code == 200:
+            return
+
+        else:
+            print(response.text.encode('utf8'))
+            raise Exception("Can't export dashboard.")
+
+    def update(self, type, id, payload, space_name=None):
+        space_name = space_name.lower()
+        if space_name:
+            url = "http://{0}:{1}/s/{2}/api/saved_objects/{3}/" \
+                  "{4}".format(self.hostname, self.port, space_name, type, id)
+
+        else:
+            url = "http://{0}:{1}/api/saved_objects/{2}/" \
+                  "{3}".format(self.hostname, self.port, type, id)
+
+        headers = {
+            'kbn-xsrf': 'reporting',
+            'Content-Type': 'application/json'
+        }
+        response = requests.put(url, data=json.dumps(payload), headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+
+        else:
+            print(response.text.encode('utf8'))
+            exit(1)
+
+    def find(self, type, title, space_name=None):
         space_name = space_name.lower()
         if space_name:
             url = "http://{0}:{1}/s/{2}/api/saved_objects/_find?type="  \
-                  "index-pattern&fields=id&fields=title".format(self.hostname,
-                                                                self.port,
-                                                                space_name)
+                  "{3}&fields=id&fields=title".format(self.hostname,
+                                                      self.port,
+                                                      space_name,
+                                                      type)
         else:
             url = "http://{0}:{1}/api/saved_objects/_find?type=" \
-                  "index-pattern&fields=id&fields=title".format(self.hostname,
-                                                                self.port)
+                  "{2}&fields=id&fields=title".format(self.hostname,
+                                                      self.port,
+                                                      type)
 
         response = requests.get(url)
 
@@ -61,7 +141,7 @@ class KibanaHandler:
             res = response.json()
             saved_objs = res.get("saved_objects")
             for obj in saved_objs:
-                if obj.get("attributes").get("title") == index_name:
+                if obj.get("attributes").get("title") == title:
                     return obj.get("id")
 
         elif response.status_code == 404:
@@ -233,7 +313,7 @@ class KibanaHandler:
             logging.debug(json.dumps(self.dashboard_json))
 
     def create_dashboard(self, space_name=None):
-        self.create_ui(self.dashboard_json, "dashboard", space_name)
+        return self.create_ui(self.dashboard_json, "dashboard", space_name)
 
 
 

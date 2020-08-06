@@ -8,9 +8,5 @@
     "kibanaSavedObjectMeta": {
       "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
     }
-  },
-  "references": [],
-  "migrationVersion": {
-    "visualization": "7.8.0"
   }
 }

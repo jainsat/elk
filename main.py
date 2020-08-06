@@ -57,6 +57,7 @@ def handle_zipped_file(name, dest_dir, type=UNKNOWN):
             new_dir = os.path.join(dest_dir, file)
             handle_dir(new_dir, new_dir, type)
 
+
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     parser.add_option("-l", "--log", dest="log", help="Path to log")
     parser.add_option("-b", "--bug_id", dest="space", help="Bug id")
     parser.add_option("-c", "--clear-old", action="store_true", dest="clear",
-                      help="Clear the old data")
+                      help="Clear the old data present in this space.")
     parser.add_option("-n", "--host", dest="host",
                       help="ELK hostname or ip address", default="localhost")
     parser.add_option("-k", "--kibana_port", dest="kibana_port",
@@ -73,11 +74,24 @@ if __name__ == "__main__":
     parser.add_option("-e", "--es_port", dest="es_port",
                       help="Elasticsearch port", default="9200")
 
+    parser.add_option("-x", "--export_dashboard_name", dest="ex_dash_name",
+                      help="Name of the dashboard to be exported.")
+
+    parser.add_option("-s", "--export_dashboard_space", dest="ex_dash_space",
+                      help="Name of the space, where the dashboard to be exported"
+                           "exist.")
+    parser.add_option("-a", "--parse_all", action="store_true", dest="parse_all",
+                      help="Parse all the lines of the log files",
+                      default=False)
+
     (options, _) = parser.parse_args()
 
     if options.log is None:
         print("Please provide the path to at least one support bundle.")
         sys.exit(1)
+
+    if options.ex_dash_name and options.ex_dash_space is None:
+        raise Exception("Please provide space of the dashboard to be exported.")
 
     if options.dest_dir is None:
         options.dest_dir = os.getcwd()
@@ -127,13 +141,14 @@ if __name__ == "__main__":
         # pprint.pprint(ip_to_data)
 
         # Insert all the data
-        es_handler.insert(ip_to_data)
+        es_handler.insert(ip_to_data, options.parse_all)
 
-        # Create all the visualizations.
+        #Create all the visualizations.
         Visualize(es_handler, kibana_handler, options.space,
-                  index_id, ip_to_data).visualize()
+                  index_id, ip_to_data).visualize(options.ex_dash_name,
+                                                  options.ex_dash_space)
 
-        print("You can access Kibana at http://{0}:{1}/s/{2}".
+        print("You can access Kibana at http://{0}:{1}/s/{2}/app/kibana".
               format(options.host, options.kibana_port, options.space.lower()))
 
     else:

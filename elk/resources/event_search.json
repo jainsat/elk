@@ -5,10 +5,10 @@
     "hits": 0,
     "columns": $COLUMNS,
     "sort": [
-      [
+
         "timestamp",
         "asc"
-      ]
+
     ],
     "version": 1,
     "kibanaSavedObjectMeta": {
@@ -21,8 +21,5 @@
       "type": "index-pattern",
       "id": "$INDEX"
     }
-  ],
-  "migrationVersion": {
-    "search": "7.4.0"
-  }
+  ]
 }

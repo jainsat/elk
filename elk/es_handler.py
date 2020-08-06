@@ -16,6 +16,8 @@ import logging
 TIMESTAMP_REGEX = "(?P<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:" \
                   "[0-9]{2}.{0,1}[0-9]{0,3}Z).*"
 
+BULK_SIZE = 10000
+
 '''
 Type to config mapping. Value represents the file name present in config
 directory. Key should be one of the types present in constant.py
@@ -42,6 +44,7 @@ class EsHandler:
         self.port = port
         self.es = Elasticsearch(['http://{0}:{1}'.format(self.host, self.port)])
         self.index = index_name
+        self.doc_cache = []
         self.root_dir = os.getenv("ELK_REPO")
         if self.root_dir is None:
             raise Exception("Please set the env variable ELK_REPO")
@@ -53,14 +56,40 @@ class EsHandler:
         if response.status_code != 200 and response.status_code != 404:
             raise Exception(response.text)
 
-    def insert(self, ip_to_data):
+    def insert(self, ip_to_data, parse_all=False):
         for k, v in ip_to_data.items():
             arr = k.split("#")
             node_type = arr[0]
             node_ip = arr[1]
-            self.handle(node_ip, node_type, v)
+            self.handle(node_ip, node_type, v, parse_all)
+        self.flush()
 
-    def handle(self, node_ip, node_type, node_data):
+    def flush(self):
+        if len(self.doc_cache) > 0:
+            print("Flushing {0} records".format(len(self.doc_cache)))
+            helpers.bulk(self.es, self.doc_cache)
+            self.doc_cache.clear()
+
+    def handle_custom_parser_result(self, res, node_type, node_uuid, node_ip,
+                                    file=None):
+        if res is not None and type(res) is dict:
+            self.add_basic_fields(node_ip, node_uuid, node_type, res)
+            if file:
+                res["file"] = file
+                res["_index"] = self.index
+            # self.es.index(index=self.index, body=res)
+            self.doc_cache.append(res)
+        elif res is not None and len(res) > 0:
+            for record in res:
+                record["_index"] = self.index
+                if file:
+                    record["file"] = file
+                self.add_basic_fields(node_ip, node_uuid, node_type, record)
+            self.doc_cache.extend(res)
+        if len(self.doc_cache) >= BULK_SIZE:
+            self.flush()
+
+    def handle(self, node_ip, node_type, node_data, parse_all=False):
         config = self.get_config(node_type)
         if not config:
             raise Exception("No config found for logs of type {0}".
@@ -114,56 +143,42 @@ class EsHandler:
 
                     if custom_parser:
                         kvs = custom_parser.pre()
-                        if kvs is not None and len(kvs) > 0:
-                            self.add_basic_fields(node_ip, node_uuid, node_type,
-                                                  res)
-                            self.es.index(index=self.index, body=kvs)
+                        self.handle_custom_parser_result(kvs, node_type,
+                                                         node_uuid, node_ip,
+                                                         file)
                     for line in f:
                         if zipped:
                             line = line.decode("utf-8")
 
-                        res = {}
-
-                        # Add some basic info
-                        if res is not None:
-                            self.add_basic_fields(node_ip, node_uuid, node_type,
-                                                  res)
-                            res["file"] = file
-                            res["line"] = line
-                            res["timestamp"] = self.extract_timestamp(line)
-
                         if patterns:
                             items = self.apply_patterns(line.rstrip(), patterns)
                             if items:
-                                if items.get("status"):
-                                    items["status"] = items["status"].upper()
-                                res.update(items)
-                                self.es.index(index=self.index, body=res)
+                                items["line"] = line
+                                items["timestamp"] = self.extract_timestamp(line)
+                                self.handle_custom_parser_result(items, node_type,
+                                                                 node_uuid,
+                                                                 node_ip,
+                                                                 file)
 
                         if custom_parser:
-                            r = custom_parser.process(line, res)
-                            if r is not None and type(r) is dict:
-                                self.es.index(index=self.index, body=r)
-                            elif r is not None:
-                                for record in r:
-                                    record["_index"] = self.index
-                                helpers.bulk(self.es, r)
-
+                            kvs = custom_parser.process(line,
+                                                        self.extract_timestamp(line),
+                                                        parse_all)
+                            self.handle_custom_parser_result(kvs, node_type,
+                                                             node_uuid, node_ip,
+                                                             file)
 
                     f.close()
                     if custom_parser:
                         kvs = custom_parser.post()
-                        if kvs is not None and len(kvs) > 0:
-                            self.add_basic_fields(node_ip, node_uuid, node_type,
-                                                  res)
-                            self.es.index(index=self.index, body=kvs)
+                        self.handle_custom_parser_result(kvs, node_type,
+                                                         node_uuid, node_ip,
+                                                         file)
 
                 if custom_parser:
                     kvs = custom_parser.finish()
-                    if kvs is not None and len(kvs) > 0:
-                        self.add_basic_fields(node_ip, node_uuid, node_type,
-                                              kvs)
-                        self.es.index(index=self.index, body=kvs)
+                    self.handle_custom_parser_result(kvs, node_type,
+                                                     node_uuid, node_ip)
 
 
     @staticmethod
@@ -243,4 +258,3 @@ class EsHandler:
             return response.json().get("hits").get("hits")
         else:
             logging.debug(response.json())
-

@@ -34,5 +34,5 @@ class CustomParser:
     dictionary or a list of dictionary. It can also choose to return nothing if
     no relevant data was found in the line.
     '''
-    def process(self, line, res):
+    def process(self, line, timestamp, parse_all=False):
         pass

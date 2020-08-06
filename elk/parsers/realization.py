@@ -23,7 +23,7 @@ class RealizationDumpParser(CustomParser):
     def __set_section(self, num):
         self.section = num
 
-    def process(self, line, res):
+    def process(self, line, timestamp, parse_all=False):
         if line.find("Expected barrier for all") == 0:
             self.__set_section(EXPECTED_BARRIER_SECTION)
 
@@ -47,6 +47,7 @@ class RealizationDumpParser(CustomParser):
                 vertical = line.split()[1].strip()
                 processed_barrier = line.split()[2].strip()
                 expected_barrier = self.expected_barrier_map.get(uuid)
+                res = {'line': line, 'timestamp': timestamp}
                 res['tn_uuid'] = uuid
                 res['expected_barrier'] = expected_barrier
                 res['processed_barrier'] = processed_barrier
@@ -69,20 +70,12 @@ class RealizationDumpParser(CustomParser):
                 # This means that error message is present.
                 if len(words) >= 3:
                     component = words[1].strip()
+                    res = {'line': 'line', 'timestamp': timestamp}
                     res['tn_uuid'] = uuid
                     res['component'] = component
                     res['err_msg'] = line[len(component) + len(uuid) + 2:].strip()
                     res['tag'] = 'realization'
                     return res
-
-
-# p = RealizationDumpParser()
-# with open("/Users/satya/logs/nsx_manager_0b540362-7c81-416e-a2fe-0ff7432973a4_20200529_095453/controller/data/realization_status_dump") as f:
-#     for line in f.readlines():
-#         r = {}
-#         p.process(line, r)
-#         print(r)
-
 
 
 
