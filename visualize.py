@@ -119,7 +119,7 @@ class Visualize:
             for obj in old_dashboard["objects"]:
                 if obj.get("attributes").get("title") == "Summary":
                     summary_id = obj.get("id")
-                    print("summary id={0}".format(summary_id))
+                    #print("summary id={0}".format(summary_id))
                     break
             with open(os.path.join(self.root_dir,
                                    'elk/resources/summary.json')) as f:
@@ -127,7 +127,7 @@ class Visualize:
                 summary = BundleSummarizer(self.ip_to_data).get_summary()
                 summary = summary.replace('\n', '\\\\n')
                 payload = t.substitute(TITLE="Summary", TEXT=summary)
-                print(payload)
+                #print(payload)
                 self.kibana_handler.update("visualization", summary_id, payload, self.space)
 
         else:

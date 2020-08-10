@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_option("-c", "--clear-old", action="store_true", dest="clear",
                       help="Clear the old data present in this space.")
     parser.add_option("-n", "--host", dest="host",
-                      help="ELK hostname or ip address", default="localhost")
+                      help="ELK hostname or ip address", default="10.172.219.243")
     parser.add_option("-k", "--kibana_port", dest="kibana_port",
                       help="Kibana port", default="5601")
     parser.add_option("-e", "--es_port", dest="es_port",
