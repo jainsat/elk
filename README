@@ -23,5 +23,3 @@ export ELK_REPO="/path/to/first-responder"
 Sample command:
 $ main.py --log <log_path> --dest_dir <dest_dir> --host 10.39.1.211 --bug_id 12345 --verbose
 
-Confluence page for Event summarizer: https://confluence.eng.vmware.com/pages/viewpage.action?spaceKey=NSBU&title=CCP+Event+Summarizer+Design
-Confluence page for ELK: https://confluence.eng.vmware.com/pages/viewpage.action?pageId=681951289
